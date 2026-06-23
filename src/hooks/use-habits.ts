@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { makeId } from '@/lib/habits/id';
 import * as storage from '@/lib/habits/storage';
+import { markDone as applyMarkDone } from '@/lib/habits/streak';
 import type { Frequency, Habit } from '@/lib/habits/types';
 import {
   cancelHabit,
@@ -69,6 +70,7 @@ export type UseHabitsApi = {
   createHabit: (draft: HabitDraft) => Promise<Habit>;
   updateHabit: (id: string, patch: Partial<HabitDraft>) => Promise<Habit | null>;
   deleteHabit: (id: string) => Promise<void>;
+  markDoneToday: (id: string) => Promise<Habit | null>;
 };
 
 export function useHabits(): UseHabitsApi {
@@ -130,6 +132,15 @@ export function useHabits(): UseHabitsApi {
     await commit(cache.filter((h) => h.id !== id));
   }, []);
 
+  const markDoneToday = useCallback(async (id: string) => {
+    const existing = cache.find((h) => h.id === id);
+    if (!existing) return null;
+    const next = applyMarkDone(existing);
+    if (next === existing) return existing; // already done today (idempotent)
+    await commit(cache.map((h) => (h.id === id ? next : h)));
+    return next;
+  }, []);
+
   return {
     habits,
     status: currentStatus,
@@ -137,6 +148,7 @@ export function useHabits(): UseHabitsApi {
     createHabit,
     updateHabit,
     deleteHabit,
+    markDoneToday,
   };
 }
 
