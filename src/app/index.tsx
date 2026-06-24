@@ -9,21 +9,8 @@ import {
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useHabits } from '@/hooks/use-habits';
+import { isDueToday } from '@/lib/habits/frequency';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
-import { isDaily, isWeekly, type Habit, type Weekday } from '@/lib/habits/types';
-
-function todayWeekday(now: Date = new Date()): Weekday {
-  // JS getDay(): 0=Sun..6=Sat → Expo convention 1=Sun..7=Sat
-  return (now.getDay() + 1) as Weekday;
-}
-
-function isDueToday(habit: Habit, now: Date = new Date()): boolean {
-  if (isDaily(habit.frequency)) return true;
-  if (isWeekly(habit.frequency)) {
-    return habit.frequency.weekdays.includes(todayWeekday(now));
-  }
-  return false;
-}
 
 function fmtTime(h: number, m: number) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;

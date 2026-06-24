@@ -11,16 +11,24 @@ import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { isDaily, isWeekly, type Habit, type NotificationDeepLink } from '../habits/types';
 import { HABIT_CATEGORY_ID } from './actions';
+import { isInQuietHours, loadQuietHours } from './quiet-hours';
 import { HABIT_CHANNEL_ID, getPermissions } from './setup';
 
-function buildContent(habit: Habit): Notifications.NotificationContentInput {
+function buildContent(
+  habit: Habit,
+  quiet: boolean,
+): Notifications.NotificationContentInput {
   const data: NotificationDeepLink = { screen: '/habit', habitId: habit.id };
   return {
     title: `${habit.emoji} Time for ${habit.name}`,
     body: 'Tap to log it.',
     data,
-    sound: 'default',
+    // Suppress sound inside quiet hours; reminder still arrives silently.
+    sound: quiet ? null : 'default',
     categoryIdentifier: HABIT_CATEGORY_ID,
+    priority: quiet
+      ? Notifications.AndroidNotificationPriority.LOW
+      : Notifications.AndroidNotificationPriority.HIGH,
   };
 }
 
@@ -29,7 +37,9 @@ export async function scheduleHabit(habit: Habit): Promise<string[]> {
   const perm = await getPermissions();
   if (!perm.granted) return [];
 
-  const content = buildContent(habit);
+  const quietHours = await loadQuietHours();
+  const quiet = isInQuietHours(habit.frequency.hour, quietHours);
+  const content = buildContent(habit, quiet);
   const ids: string[] = [];
 
   if (isDaily(habit.frequency)) {

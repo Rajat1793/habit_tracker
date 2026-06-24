@@ -13,6 +13,7 @@ import { makeId } from '@/lib/habits/id';
 import * as storage from '@/lib/habits/storage';
 import { markDone as applyMarkDone } from '@/lib/habits/streak';
 import type { Frequency, Habit } from '@/lib/habits/types';
+import { syncBadgeCount } from '@/lib/notifications/badge';
 import {
   cancelHabit,
   rescheduleHabit,
@@ -44,6 +45,8 @@ async function ensureLoaded(): Promise<void> {
   try {
     cache = await storage.loadAll();
     status = 'ready';
+    // Sync badge on initial load too (e.g. day rolled over while app was closed).
+    void syncBadgeCount(cache);
   } catch {
     cache = [];
     status = 'error';
@@ -54,6 +57,8 @@ async function ensureLoaded(): Promise<void> {
 async function commit(next: Habit[]): Promise<void> {
   cache = next;
   await storage.saveAll(cache);
+  // Keep the app icon badge in sync with pending habits.
+  void syncBadgeCount(cache);
   emit();
 }
 

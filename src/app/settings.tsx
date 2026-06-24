@@ -9,14 +9,16 @@
  * both the foreground handler AND tap-routing without waiting for a habit's
  * scheduled time.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -24,8 +26,20 @@ import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { useHabits } from '@/hooks/use-habits';
 import { copyTokenToClipboard } from '@/lib/notifications/push';
+import {
+  DEFAULT_QUIET_HOURS,
+  loadQuietHours,
+  saveQuietHours,
+  type QuietHours,
+} from '@/lib/notifications/quiet-hours';
 import { HABIT_CHANNEL_ID } from '@/lib/notifications/setup';
 import type { NotificationDeepLink } from '@/lib/habits/types';
+
+function clampHour(raw: string): number {
+  const n = parseInt(raw.replace(/\D/g, ''), 10);
+  if (Number.isNaN(n)) return 0;
+  return Math.max(0, Math.min(23, n));
+}
 
 function statusColor(status: string): string {
   if (status === 'granted') return '#7FD18B';
@@ -39,6 +53,18 @@ export default function SettingsScreen() {
   const { habits } = useHabits();
   const [copied, setCopied] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [quiet, setQuiet] = useState<QuietHours>(DEFAULT_QUIET_HOURS);
+  const [quietSaved, setQuietSaved] = useState(false);
+
+  useEffect(() => {
+    void loadQuietHours().then(setQuiet);
+  }, []);
+
+  const onSaveQuiet = async () => {
+    await saveQuietHours(quiet);
+    setQuietSaved(true);
+    setTimeout(() => setQuietSaved(false), 1500);
+  };
 
   const onCopy = async () => {
     if (!token) return;
@@ -171,6 +197,56 @@ export default function SettingsScreen() {
           </Text>
         </Pressable>
       </View>
+
+      {/* Quiet hours */}
+      <View style={styles.card}>
+        <View style={styles.rowBetween}>
+          <Text style={styles.cardLabel}>Quiet hours</Text>
+          <Switch
+            value={quiet.enabled}
+            onValueChange={(enabled) => setQuiet((q) => ({ ...q, enabled }))}
+            trackColor={{ false: '#26222E', true: '#7C5CFF' }}
+            thumbColor="#F5F5F7"
+          />
+        </View>
+        <Text style={styles.helpText}>
+          Reminders scheduled inside this window arrive silently (no sound, lower priority).
+          Wraps across midnight — e.g. 22 → 7 covers 22, 23, 0, 1…6.
+        </Text>
+        <View style={[styles.row, { marginTop: 12, gap: 16 }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.miniLabel}>Start hour (0–23)</Text>
+            <TextInput
+              value={String(quiet.startHour)}
+              onChangeText={(t) => setQuiet((q) => ({ ...q, startHour: clampHour(t) }))}
+              keyboardType="number-pad"
+              maxLength={2}
+              editable={quiet.enabled}
+              style={[styles.input, !quiet.enabled && styles.btnDisabled]}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.miniLabel}>End hour (0–23)</Text>
+            <TextInput
+              value={String(quiet.endHour)}
+              onChangeText={(t) => setQuiet((q) => ({ ...q, endHour: clampHour(t) }))}
+              keyboardType="number-pad"
+              maxLength={2}
+              editable={quiet.enabled}
+              style={[styles.input, !quiet.enabled && styles.btnDisabled]}
+            />
+          </View>
+        </View>
+        <Pressable style={styles.secondaryBtn} onPress={onSaveQuiet}>
+          <Text style={styles.secondaryBtnText}>
+            {quietSaved ? '✓ Saved' : 'Save quiet hours'}
+          </Text>
+        </Pressable>
+        <Text style={styles.fineprint}>
+          New habits picked up the setting automatically. Existing reminders apply it on the
+          next reschedule (edit / mark done).
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -192,7 +268,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rowBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   dot: { width: 10, height: 10, borderRadius: 5 },
+  miniLabel: { color: '#9A9AA2', fontSize: 11, marginBottom: 6 },
+  input: {
+    backgroundColor: '#0B0B0F',
+    color: '#F5F5F7',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    fontFamily: 'Courier',
+  },
   cardValue: { color: '#F5F5F7', fontSize: 16, fontWeight: '600' },
   helpText: { color: '#9A9AA2', fontSize: 13, lineHeight: 18, marginTop: 6 },
   fineprint: { color: '#5C5C66', fontSize: 11, lineHeight: 15, marginTop: 10 },
