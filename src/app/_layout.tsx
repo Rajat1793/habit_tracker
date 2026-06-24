@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useNotificationRouter } from '@/hooks/use-notification-router';
+import { ensureNotificationCategory } from '@/lib/notifications/actions';
 import {
   ensureAndroidChannel,
   installForegroundHandler,
@@ -13,14 +14,16 @@ import {
 installForegroundHandler();
 
 export default function RootLayout() {
-  // Channel must exist BEFORE the user is ever prompted for permission on
-  // Android 13+. `setNotificationChannelAsync` is idempotent — calling it
-  // on every cold start just updates the existing channel.
+  // Channel + category must exist BEFORE the user is ever prompted for
+  // permission on Android 13+. Both calls are idempotent — running them on
+  // every cold start just updates the existing config.
   useEffect(() => {
     void ensureAndroidChannel();
+    void ensureNotificationCategory();
   }, []);
 
   // Wires both local AND push notification taps to expo-router. Same handler.
+  // Also dispatches the Done / Snooze action buttons.
   useNotificationRouter();
 
   return (

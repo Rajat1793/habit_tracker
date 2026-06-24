@@ -10,6 +10,7 @@
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { isDaily, isWeekly, type Habit, type NotificationDeepLink } from '../habits/types';
+import { HABIT_CATEGORY_ID } from './actions';
 import { HABIT_CHANNEL_ID, getPermissions } from './setup';
 
 function buildContent(habit: Habit): Notifications.NotificationContentInput {
@@ -19,6 +20,7 @@ function buildContent(habit: Habit): Notifications.NotificationContentInput {
     body: 'Tap to log it.',
     data,
     sound: 'default',
+    categoryIdentifier: HABIT_CATEGORY_ID,
   };
 }
 

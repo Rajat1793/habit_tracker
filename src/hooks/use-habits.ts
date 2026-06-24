@@ -57,6 +57,21 @@ async function commit(next: Habit[]): Promise<void> {
   emit();
 }
 
+/**
+ * Module-level "mark done" for use outside React (notification action handler).
+ * Mirrors the hook action but doesn't require a component context.
+ */
+export async function markDoneTodayById(id: string): Promise<Habit | null> {
+  // Make sure cache is hydrated — action taps can arrive before any screen mounts.
+  if (status === 'idle') await ensureLoaded();
+  const existing = cache.find((h) => h.id === id);
+  if (!existing) return null;
+  const next = applyMarkDone(existing);
+  if (next === existing) return existing;
+  await commit(cache.map((h) => (h.id === id ? next : h)));
+  return next;
+}
+
 export type HabitDraft = {
   name: string;
   emoji: string;
