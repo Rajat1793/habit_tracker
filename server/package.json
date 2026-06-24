@@ -1,0 +1,14 @@
+{
+  "name": "streaks-push-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Expo push helper for Streaks. Sends and reads receipts.",
+  "scripts": {
+    "send": "node send.js",
+    "receipts": "node receipts.js"
+  },
+  "dependencies": {
+    "expo-server-sdk": "^3.10.0"
+  }
+}
