@@ -8,6 +8,7 @@ import {
   installForegroundHandler,
 } from '@/lib/notifications/setup';
 import { isOnboarded } from '@/lib/onboarding/state';
+import { initSentry } from '@/lib/observability/sentry';
 import { ThemeProvider, useTheme } from '@/theme/theme-context';
 import { I18nProvider, useT } from '@/i18n';
 
@@ -15,6 +16,9 @@ import { I18nProvider, useT } from '@/i18n';
 // This guarantees the handler is registered before any notification can
 // arrive at startup.
 installForegroundHandler();
+
+// Crash reporting init — no-op in dev or when DSN is absent.
+initSentry();
 
 function ThemedStack() {
   const { colors, scheme } = useTheme();

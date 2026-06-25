@@ -1,0 +1,15 @@
+# Restore from a clipboard backup and verify the imported habit shows up.
+appId: com.streaks.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "Skip"
+    optional: true
+- assertVisible: "Today"
+- tapOn: "Settings"
+- assertVisible: "Backup"
+- tapOn: "Paste & restore from clipboard"
+- assertVisible:
+    text: "Cancel"
+    optional: true

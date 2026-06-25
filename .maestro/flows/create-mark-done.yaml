@@ -1,0 +1,23 @@
+# Create a habit, mark it done, and verify the streak chip appears.
+#
+# Run with:
+#   maestro test .maestro/flows/create-mark-done.yaml
+appId: com.streaks.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    text: "Skip"
+    optional: true
+- assertVisible: "Today"
+- tapOn: "+ New"
+- assertVisible: "New habit"
+- tapOn:
+    id: "form.name"
+    optional: true
+- inputText: "Walk 10 minutes"
+- tapOn: "Daily"
+- tapOn: "Create habit"
+- assertVisible: "Walk 10 minutes"
+- tapOn: "Mark done"
+- assertVisible: "✓ Done"
