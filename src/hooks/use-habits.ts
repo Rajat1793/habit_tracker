@@ -91,6 +91,7 @@ export type UseHabitsApi = {
   updateHabit: (id: string, patch: Partial<HabitDraft>) => Promise<Habit | null>;
   deleteHabit: (id: string) => Promise<void>;
   markDoneToday: (id: string) => Promise<Habit | null>;
+  replaceAll: (next: Habit[]) => Promise<void>;
 };
 
 export function useHabits(): UseHabitsApi {
@@ -161,6 +162,21 @@ export function useHabits(): UseHabitsApi {
     return next;
   }, []);
 
+  /**
+   * Wipe and replace the whole store — used by backup restore.
+   * Cancels every existing habit's notifications first, then reschedules
+   * the incoming ones so notification IDs are fresh and accurate.
+   */
+  const replaceAll = useCallback(async (next: Habit[]) => {
+    for (const old of cache) await cancelHabit(old);
+    const rescheduled: Habit[] = [];
+    for (const incoming of next) {
+      const ids = await scheduleHabit({ ...incoming, notificationIds: [] });
+      rescheduled.push({ ...incoming, notificationIds: ids });
+    }
+    await commit(rescheduled);
+  }, []);
+
   return {
     habits,
     status: currentStatus,
@@ -169,6 +185,7 @@ export function useHabits(): UseHabitsApi {
     updateHabit,
     deleteHabit,
     markDoneToday,
+    replaceAll,
   };
 }
 

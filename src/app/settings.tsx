@@ -23,8 +23,11 @@ import {
 } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
+import * as Clipboard from 'expo-clipboard';
+import { useRouter } from 'expo-router';
 import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { useHabits } from '@/hooks/use-habits';
+import { parseBackup, serializeBackup } from '@/lib/habits/backup';
 import { copyTokenToClipboard } from '@/lib/notifications/push';
 import {
   DEFAULT_QUIET_HOURS,
@@ -33,6 +36,7 @@ import {
   type QuietHours,
 } from '@/lib/notifications/quiet-hours';
 import { HABIT_CHANNEL_ID } from '@/lib/notifications/setup';
+import { resetOnboarding } from '@/lib/onboarding/state';
 import type { NotificationDeepLink } from '@/lib/habits/types';
 import { useColors, useTheme, useThemedStyles, type ThemeMode } from '@/theme/theme-context';
 import { SUPPORTED_LOCALES, useI18n, type LocalePref } from '@/i18n';
@@ -64,16 +68,18 @@ const LOCALE_OPTIONS: { value: LocalePref; label: string }[] = [
 export default function SettingsScreen() {
   const { token, permission, loading, register, refreshPermission, openSettings } =
     usePushNotifications();
-  const { habits } = useHabits();
+  const { habits, replaceAll } = useHabits();
   const colors = useColors();
   const { mode, setMode } = useTheme();
   const { pref: localePref, setPref: setLocalePref, t } = useI18n();
   const styles = useThemedStyles(makeStyles);
+  const router = useRouter();
 
   const [copied, setCopied] = useState(false);
   const [testing, setTesting] = useState(false);
   const [quiet, setQuiet] = useState<QuietHours>(DEFAULT_QUIET_HOURS);
   const [quietSaved, setQuietSaved] = useState(false);
+  const [exported, setExported] = useState(false);
 
   useEffect(() => {
     void loadQuietHours().then(setQuiet);
@@ -90,6 +96,48 @@ export default function SettingsScreen() {
     await copyTokenToClipboard(token);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  };
+
+  const onExport = async () => {
+    await Clipboard.setStringAsync(serializeBackup(habits));
+    setExported(true);
+    setTimeout(() => setExported(false), 1500);
+  };
+
+  const onImport = async () => {
+    const raw = await Clipboard.getStringAsync();
+    if (!raw.trim()) {
+      Alert.alert(t('settings.failed'), t('settings.backupEmpty'));
+      return;
+    }
+    const parsed = parseBackup(raw);
+    if (!parsed) {
+      Alert.alert(t('settings.failed'), t('settings.backupImportFail'));
+      return;
+    }
+    Alert.alert(
+      t('settings.backupImportConfirmTitle'),
+      t('settings.backupImportConfirmBody'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.save'),
+          style: 'destructive',
+          onPress: async () => {
+            await replaceAll(parsed.habits);
+            Alert.alert(
+              t('settings.backupImportConfirmTitle'),
+              t('settings.backupImportSuccess', { count: parsed.habits.length }),
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const onResetOnboarding = async () => {
+    await resetOnboarding();
+    router.replace('/onboarding');
   };
 
   const onSendTest = async () => {
@@ -341,6 +389,44 @@ export default function SettingsScreen() {
           </Text>
         </Pressable>
         <Text style={styles.fineprint}>{t('settings.quietFineprint')}</Text>
+      </View>
+
+      {/* Backup */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('settings.backupTitle')}</Text>
+        <Text style={styles.helpText}>{t('settings.backupHint')}</Text>
+        <Pressable
+          style={styles.secondaryBtn}
+          onPress={onExport}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.backupExport')}
+        >
+          <Text style={styles.secondaryBtnText}>
+            {exported ? t('settings.backupExported') : t('settings.backupExport')}
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[styles.secondaryBtn, { marginTop: 8 }]}
+          onPress={onImport}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.backupImport')}
+        >
+          <Text style={styles.secondaryBtnText}>{t('settings.backupImport')}</Text>
+        </Pressable>
+        <Text style={styles.fineprint}>{t('settings.backupFineprint')}</Text>
+      </View>
+
+      {/* Advanced */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('settings.advancedTitle')}</Text>
+        <Pressable
+          style={styles.linkBtn}
+          onPress={onResetOnboarding}
+          accessibilityRole="button"
+          accessibilityLabel={t('settings.onboardingReset')}
+        >
+          <Text style={styles.linkBtnText}>{t('settings.onboardingReset')}</Text>
+        </Pressable>
       </View>
     </ScrollView>
   );

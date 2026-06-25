@@ -103,6 +103,8 @@ const hi: LocaleStrings = {
     quietFineprint:
       'नई आदतें इसे स्वतः उठाती हैं। मौजूदा रिमाइंडर अगले रीशेड्यूल पर लागू करते हैं।',
     backupTitle: 'बैकअप',
+    backupHint:
+      'अपनी आदतों को JSON के रूप में क्लिपबोर्ड पर एक्सपोर्ट करें, या बैकअप पेस्ट करके पुनर्स्थापित करें।',
     backupExport: 'क्लिपबोर्ड पर बैकअप कॉपी करें',
     backupExported: '✓ JSON कॉपी हुआ',
     backupImport: 'क्लिपबोर्ड से पेस्ट करके पुनर्स्थापित करें',
@@ -111,6 +113,9 @@ const hi: LocaleStrings = {
     backupImportSuccess: '{{count}} आदतें पुनर्स्थापित हुईं।',
     backupImportFail: 'क्लिपबोर्ड वैध Streaks बैकअप के रूप में पार्स नहीं हो सका।',
     backupEmpty: 'क्लिपबोर्ड खाली है।',
+    backupFineprint:
+      'पुनर्स्थापना नोटिफिकेशन फिर से शेड्यूल करती है ताकि इम्पोर्ट के बाद रिमाइंडर काम करते रहें।',
+    advancedTitle: 'उन्नत',
     onboardingReset: 'ऑनबोर्डिंग दोबारा दिखाएँ',
     failed: 'विफल',
   },

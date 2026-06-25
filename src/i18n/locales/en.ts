@@ -104,6 +104,8 @@ const en = {
     quietFineprint:
       'New habits picked up the setting automatically. Existing reminders apply it on the next reschedule (edit / mark done).',
     backupTitle: 'Backup',
+    backupHint:
+      'Export your habits as JSON to the clipboard, or paste a backup to restore.',
     backupExport: 'Copy backup to clipboard',
     backupExported: '✓ Copied JSON',
     backupImport: 'Paste & restore from clipboard',
@@ -113,6 +115,9 @@ const en = {
     backupImportSuccess: 'Restored {{count}} habits.',
     backupImportFail: 'Could not parse clipboard as a valid Streaks backup.',
     backupEmpty: 'Clipboard is empty.',
+    backupFineprint:
+      'Restore reschedules notifications from scratch so reminders keep working after import.',
+    advancedTitle: 'Advanced',
     onboardingReset: 'Show onboarding again',
     failed: 'Failed',
   },

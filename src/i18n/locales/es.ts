@@ -103,6 +103,8 @@ const es: LocaleStrings = {
     quietFineprint:
       'Los nuevos hábitos lo aplican automáticamente. Los recordatorios existentes lo aplican en la próxima reprogramación.',
     backupTitle: 'Respaldo',
+    backupHint:
+      'Exporta tus hábitos como JSON al portapapeles, o pega un respaldo para restaurar.',
     backupExport: 'Copiar respaldo al portapapeles',
     backupExported: '✓ JSON copiado',
     backupImport: 'Pegar y restaurar desde el portapapeles',
@@ -111,6 +113,9 @@ const es: LocaleStrings = {
     backupImportSuccess: 'Se restauraron {{count}} hábitos.',
     backupImportFail: 'No se pudo interpretar el portapapeles como respaldo válido de Streaks.',
     backupEmpty: 'El portapapeles está vacío.',
+    backupFineprint:
+      'La restauración reprograma las notificaciones desde cero para que los recordatorios sigan funcionando tras importar.',
+    advancedTitle: 'Avanzado',
     onboardingReset: 'Mostrar la introducción de nuevo',
     failed: 'Falló',
   },
