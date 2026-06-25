@@ -24,14 +24,14 @@ import { useColors, useThemedStyles } from '@/theme/theme-context';
 import { useT } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
-const WEEKDAY_LABELS: { weekday: Weekday; label: string }[] = [
-  { weekday: 1, label: 'S' }, // Sun
-  { weekday: 2, label: 'M' },
-  { weekday: 3, label: 'T' },
-  { weekday: 4, label: 'W' },
-  { weekday: 5, label: 'T' },
-  { weekday: 6, label: 'F' },
-  { weekday: 7, label: 'S' }, // Sat
+const WEEKDAY_LABELS: { weekday: Weekday; label: string; a11yKey: string }[] = [
+  { weekday: 1, label: 'S', a11yKey: 'a11y.weekdaySun' },
+  { weekday: 2, label: 'M', a11yKey: 'a11y.weekdayMon' },
+  { weekday: 3, label: 'T', a11yKey: 'a11y.weekdayTue' },
+  { weekday: 4, label: 'W', a11yKey: 'a11y.weekdayWed' },
+  { weekday: 5, label: 'T', a11yKey: 'a11y.weekdayThu' },
+  { weekday: 6, label: 'F', a11yKey: 'a11y.weekdayFri' },
+  { weekday: 7, label: 'S', a11yKey: 'a11y.weekdaySat' },
 ];
 
 function clampInt(raw: string, min: number, max: number): number {
@@ -103,7 +103,9 @@ export default function NewHabitScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.h1}>{title}</Text>
+        <Text style={styles.h1} accessibilityRole="header">
+          {title}
+        </Text>
 
         <Text style={styles.label}>{t('form.name')}</Text>
         <TextInput
@@ -144,7 +146,7 @@ export default function NewHabitScreen() {
 
         {kind === 'weekly' && (
           <View style={styles.weekRow}>
-            {WEEKDAY_LABELS.map(({ weekday, label }) => {
+            {WEEKDAY_LABELS.map(({ weekday, label, a11yKey }) => {
               const active = weekdays.includes(weekday);
               return (
                 <Pressable
@@ -153,7 +155,7 @@ export default function NewHabitScreen() {
                   style={[styles.dayChip, active && styles.dayChipActive]}
                   accessibilityRole="button"
                   accessibilityState={{ selected: active }}
-                  accessibilityLabel={`Weekday ${weekday}`}
+                  accessibilityLabel={t(a11yKey)}
                 >
                   <Text style={[styles.dayChipText, active && styles.dayChipTextActive]}>
                     {label}

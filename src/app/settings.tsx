@@ -176,7 +176,9 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>{t('settings.title')}</Text>
+      <Text style={styles.h1} accessibilityRole="header">
+        {t('settings.title')}
+      </Text>
 
       {/* Appearance */}
       <View style={styles.card}>
@@ -292,6 +294,7 @@ export default function SettingsScreen() {
               onPress={onCopy}
               accessibilityRole="button"
               accessibilityLabel={t('settings.copyToken')}
+              accessibilityHint={t('a11y.hintCopyToken')}
             >
               <Text style={styles.secondaryBtnText}>
                 {copied ? t('settings.copied') : t('settings.copyToken')}
@@ -332,6 +335,7 @@ export default function SettingsScreen() {
           disabled={testing}
           accessibilityRole="button"
           accessibilityLabel={t('settings.testBtn')}
+          accessibilityHint={t('a11y.hintTestReminder')}
         >
           <Text style={styles.secondaryBtnText}>
             {testing ? t('settings.scheduling') : t('settings.testBtn')}
@@ -400,6 +404,7 @@ export default function SettingsScreen() {
           onPress={onExport}
           accessibilityRole="button"
           accessibilityLabel={t('settings.backupExport')}
+          accessibilityHint={t('a11y.hintBackupExport')}
         >
           <Text style={styles.secondaryBtnText}>
             {exported ? t('settings.backupExported') : t('settings.backupExport')}
@@ -410,6 +415,7 @@ export default function SettingsScreen() {
           onPress={onImport}
           accessibilityRole="button"
           accessibilityLabel={t('settings.backupImport')}
+          accessibilityHint={t('a11y.hintBackupImport')}
         >
           <Text style={styles.secondaryBtnText}>{t('settings.backupImport')}</Text>
         </Pressable>
@@ -424,6 +430,7 @@ export default function SettingsScreen() {
           onPress={onResetOnboarding}
           accessibilityRole="button"
           accessibilityLabel={t('settings.onboardingReset')}
+          accessibilityHint={t('a11y.hintOnboardingReset')}
         >
           <Text style={styles.linkBtnText}>{t('settings.onboardingReset')}</Text>
         </Pressable>

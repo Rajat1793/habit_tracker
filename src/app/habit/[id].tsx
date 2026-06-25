@@ -92,9 +92,17 @@ export default function HabitDetailScreen() {
       <Stack.Screen options={{ title: habit.name }} />
 
       <View style={styles.hero}>
-        <Text style={styles.emoji}>{habit.emoji}</Text>
-        <Text style={styles.name}>{habit.name}</Text>
-        <View style={styles.streakChip}>
+        <Text style={styles.emoji} accessibilityElementsHidden importantForAccessibility="no">
+          {habit.emoji}
+        </Text>
+        <Text style={styles.name} accessibilityRole="header">
+          {habit.name}
+        </Text>
+        <View
+          style={styles.streakChip}
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={t('detail.streakDays', { count: streak })}
+        >
           <Text style={styles.streakText}>{t('detail.streakDays', { count: streak })}</Text>
         </View>
       </View>
@@ -134,6 +142,7 @@ export default function HabitDetailScreen() {
         accessibilityRole="button"
         accessibilityState={{ disabled: done }}
         accessibilityLabel={done ? t('detail.doneToday') : t('detail.markToday')}
+        accessibilityHint={done ? undefined : t('a11y.hintMarkDone')}
       >
         <Text style={[styles.primaryBtnText, done && styles.primaryBtnTextDone]}>
           {done ? t('detail.doneToday') : t('detail.markToday')}
@@ -154,6 +163,7 @@ export default function HabitDetailScreen() {
         onPress={onDelete}
         accessibilityRole="button"
         accessibilityLabel={t('detail.deleteBtn')}
+        accessibilityHint={t('a11y.hintDelete')}
       >
         <Text style={styles.dangerBtnText}>{t('detail.deleteBtn')}</Text>
       </Pressable>

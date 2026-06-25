@@ -120,6 +120,24 @@ const es: LocaleStrings = {
     failed: 'Falló',
   },
 
+  a11y: {
+    weekdaySun: 'domingo',
+    weekdayMon: 'lunes',
+    weekdayTue: 'martes',
+    weekdayWed: 'miércoles',
+    weekdayThu: 'jueves',
+    weekdayFri: 'viernes',
+    weekdaySat: 'sábado',
+    hintCopyToken: 'Copia tu token de Expo al portapapeles.',
+    hintBackupExport: 'Copia un respaldo JSON de todos tus hábitos al portapapeles.',
+    hintBackupImport: 'Lee JSON del portapapeles y reemplaza tus hábitos.',
+    hintTestReminder: 'Programa una notificación en tres segundos.',
+    hintDelete: 'Elimina este hábito y cancela sus recordatorios.',
+    hintMarkDone: 'Marca este hábito como completado hoy.',
+    hintOnboardingReset: 'Muestra la introducción la próxima vez que abras la app.',
+    allDoneCelebration: 'Todos los hábitos completados hoy. ¡Buen trabajo!',
+  },
+
   onboarding: {
     skip: 'Saltar',
     next: 'Siguiente',

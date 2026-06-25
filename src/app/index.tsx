@@ -60,8 +60,19 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <ConfettiBurst ref={confettiRef} />
+      {todays.length > 0 && pending === 0 && (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityRole="text"
+          style={styles.srOnly}
+        >
+          {t('a11y.allDoneCelebration')}
+        </Text>
+      )}
       <View style={styles.header}>
-        <Text style={styles.heading}>{t('home.title')}</Text>
+        <Text style={styles.heading} accessibilityRole="header">
+          {t('home.title')}
+        </Text>
         <View style={styles.headerActions}>
           <Link href="/settings" asChild>
             <Pressable hitSlop={12} accessibilityRole="link" accessibilityLabel={t('home.settings')}>
@@ -122,6 +133,7 @@ export default function HomeScreen() {
                   accessibilityRole="button"
                   accessibilityState={{ disabled: done }}
                   accessibilityLabel={done ? t('home.done') : t('home.markDone')}
+                  accessibilityHint={done ? undefined : t('a11y.hintMarkDone')}
                 >
                   <Text style={[styles.doneBtnText, done && styles.doneBtnTextDone]}>
                     {done ? t('home.done') : t('home.markDone')}
@@ -140,6 +152,14 @@ function makeStyles(c: Palette) {
   return StyleSheet.create({
     container: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    // Off-screen text used only to push announcements to assistive tech.
+    srOnly: {
+      position: 'absolute',
+      width: 1,
+      height: 1,
+      overflow: 'hidden',
+      opacity: 0,
+    },
     header: {
       flexDirection: 'row',
       alignItems: 'center',

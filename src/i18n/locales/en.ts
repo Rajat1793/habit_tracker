@@ -135,6 +135,24 @@ const en = {
     s3Body:
       'Tapping a reminder deep-links straight to that habit — even from the lock screen.',
   },
+
+  a11y: {
+    weekdaySun: 'Sunday',
+    weekdayMon: 'Monday',
+    weekdayTue: 'Tuesday',
+    weekdayWed: 'Wednesday',
+    weekdayThu: 'Thursday',
+    weekdayFri: 'Friday',
+    weekdaySat: 'Saturday',
+    hintCopyToken: 'Copies your Expo push token to the clipboard.',
+    hintBackupExport: 'Copies a JSON backup of all your habits to the clipboard.',
+    hintBackupImport: 'Reads JSON from the clipboard and replaces your habits.',
+    hintTestReminder: 'Schedules a notification three seconds from now.',
+    hintDelete: 'Deletes this habit and cancels its reminders.',
+    hintMarkDone: 'Marks this habit complete for today.',
+    hintOnboardingReset: 'Shows the welcome carousel the next time you launch.',
+    allDoneCelebration: 'All habits done for today. Great work.',
+  },
 } as const;
 
 export type LocaleStrings = typeof en;

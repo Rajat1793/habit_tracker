@@ -133,6 +133,24 @@ const hi: LocaleStrings = {
     s3Body:
       'रिमाइंडर पर टैप करने से सीधे उस आदत का गहरा लिंक खुलता है — लॉक स्क्रीन से भी।',
   },
+
+  a11y: {
+    weekdaySun: 'रविवार',
+    weekdayMon: 'सोमवार',
+    weekdayTue: 'मंगलवार',
+    weekdayWed: 'बुधवार',
+    weekdayThu: 'गुरुवार',
+    weekdayFri: 'शुक्रवार',
+    weekdaySat: 'शनिवार',
+    hintCopyToken: 'आपका Expo पुश टोकन क्लिपबोर्ड पर कॉपी करता है।',
+    hintBackupExport: 'सभी आदतों का JSON बैकअप क्लिपबोर्ड पर कॉपी करता है।',
+    hintBackupImport: 'क्लिपबोर्ड से JSON पढ़कर आपकी आदतें बदलता है।',
+    hintTestReminder: 'अभी से तीन सेकंड बाद नोटिफिकेशन भेजता है।',
+    hintDelete: 'यह आदत हटाता है और इसके रिमाइंडर रद्द करता है।',
+    hintMarkDone: 'इस आदत को आज के लिए पूर्ण चिह्नित करता है।',
+    hintOnboardingReset: 'अगली बार अप्प खोलने पर स्वागत स्लाइड दिखाता है।',
+    allDoneCelebration: 'आज की सभी आदतें पूरी। शाबाश!',
+  },
 };
 
 export default hi;
