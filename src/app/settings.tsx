@@ -34,6 +34,8 @@ import {
 } from '@/lib/notifications/quiet-hours';
 import { HABIT_CHANNEL_ID } from '@/lib/notifications/setup';
 import type { NotificationDeepLink } from '@/lib/habits/types';
+import { useColors, useTheme, useThemedStyles, type ThemeMode } from '@/theme/theme-context';
+import type { Palette } from '@/theme/colors';
 
 function clampHour(raw: string): number {
   const n = parseInt(raw.replace(/\D/g, ''), 10);
@@ -41,16 +43,26 @@ function clampHour(raw: string): number {
   return Math.max(0, Math.min(23, n));
 }
 
-function statusColor(status: string): string {
-  if (status === 'granted') return '#7FD18B';
-  if (status === 'denied') return '#FF6F6F';
-  return '#FFB75C';
+function statusColor(c: Palette, status: string): string {
+  if (status === 'granted') return c.success;
+  if (status === 'denied') return c.danger;
+  return c.warning;
 }
+
+const THEME_MODES: { value: ThemeMode; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+];
 
 export default function SettingsScreen() {
   const { token, permission, loading, register, refreshPermission, openSettings } =
     usePushNotifications();
   const { habits } = useHabits();
+  const colors = useColors();
+  const { mode, setMode } = useTheme();
+  const styles = useThemedStyles(makeStyles);
+
   const [copied, setCopied] = useState(false);
   const [testing, setTesting] = useState(false);
   const [quiet, setQuiet] = useState<QuietHours>(DEFAULT_QUIET_HOURS);
@@ -80,7 +92,6 @@ export default function SettingsScreen() {
     }
     setTesting(true);
     try {
-      // Deep-link to the first habit if any exist; otherwise to home.
       const target = habits[0];
       const data: NotificationDeepLink | { screen: string } = target
         ? { screen: '/habit', habitId: target.id }
@@ -112,16 +123,50 @@ export default function SettingsScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>Settings</Text>
 
+      {/* Appearance */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>Appearance</Text>
+        <View style={styles.segment}>
+          {THEME_MODES.map(({ value, label }) => (
+            <Pressable
+              key={value}
+              onPress={() => setMode(value)}
+              style={[styles.segmentBtn, mode === value && styles.segmentBtnActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: mode === value }}
+              accessibilityLabel={`Theme ${label}`}
+            >
+              <Text
+                style={[styles.segmentText, mode === value && styles.segmentTextActive]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.fineprint}>
+          “System” follows your device’s light/dark setting in real time.
+        </Text>
+      </View>
+
       {/* Permission card */}
       <View style={styles.card}>
         <Text style={styles.cardLabel}>Notification permission</Text>
         <View style={styles.row}>
-          <View style={[styles.dot, { backgroundColor: statusColor(permission.status) }]} />
+          <View
+            style={[styles.dot, { backgroundColor: statusColor(colors, permission.status) }]}
+          />
           <Text style={styles.cardValue}>{permission.status}</Text>
         </View>
 
         {permission.status === 'undetermined' && (
-          <Pressable style={styles.primaryBtn} onPress={register} disabled={loading}>
+          <Pressable
+            style={styles.primaryBtn}
+            onPress={register}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Enable notifications"
+          >
             <Text style={styles.primaryBtnText}>
               {loading ? 'Requesting…' : 'Enable notifications'}
             </Text>
@@ -133,10 +178,20 @@ export default function SettingsScreen() {
             <Text style={styles.helpText}>
               Notifications are off for Streaks. You can re-enable them from system settings.
             </Text>
-            <Pressable style={styles.primaryBtn} onPress={openSettings}>
+            <Pressable
+              style={styles.primaryBtn}
+              onPress={openSettings}
+              accessibilityRole="button"
+              accessibilityLabel="Open system settings"
+            >
               <Text style={styles.primaryBtnText}>Open system settings</Text>
             </Pressable>
-            <Pressable style={styles.linkBtn} onPress={refreshPermission}>
+            <Pressable
+              style={styles.linkBtn}
+              onPress={refreshPermission}
+              accessibilityRole="button"
+              accessibilityLabel="Refresh permission status"
+            >
               <Text style={styles.linkBtnText}>I changed it — refresh</Text>
             </Pressable>
           </>
@@ -155,7 +210,12 @@ export default function SettingsScreen() {
             <Text selectable style={styles.tokenText}>
               {token}
             </Text>
-            <Pressable style={styles.secondaryBtn} onPress={onCopy}>
+            <Pressable
+              style={styles.secondaryBtn}
+              onPress={onCopy}
+              accessibilityRole="button"
+              accessibilityLabel="Copy push token to clipboard"
+            >
               <Text style={styles.secondaryBtnText}>{copied ? '✓ Copied' : 'Copy token'}</Text>
             </Pressable>
           </>
@@ -170,9 +230,12 @@ export default function SettingsScreen() {
               style={[styles.primaryBtn, !permission.granted && styles.btnDisabled]}
               onPress={register}
               disabled={!permission.granted || loading}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !permission.granted || loading }}
+              accessibilityLabel="Register for push notifications"
             >
               {loading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.accentText} />
               ) : (
                 <Text style={styles.primaryBtnText}>Register for push</Text>
               )}
@@ -191,7 +254,13 @@ export default function SettingsScreen() {
           Schedules a local notification in 3 seconds.{'\n'}
           Keep the app open to see the foreground banner; lock the screen to see background.
         </Text>
-        <Pressable style={styles.secondaryBtn} onPress={onSendTest} disabled={testing}>
+        <Pressable
+          style={styles.secondaryBtn}
+          onPress={onSendTest}
+          disabled={testing}
+          accessibilityRole="button"
+          accessibilityLabel="Send test reminder in three seconds"
+        >
           <Text style={styles.secondaryBtnText}>
             {testing ? 'Scheduling…' : 'Send test reminder in 3s'}
           </Text>
@@ -205,8 +274,9 @@ export default function SettingsScreen() {
           <Switch
             value={quiet.enabled}
             onValueChange={(enabled) => setQuiet((q) => ({ ...q, enabled }))}
-            trackColor={{ false: '#26222E', true: '#7C5CFF' }}
-            thumbColor="#F5F5F7"
+            trackColor={{ false: colors.switchTrackOff, true: colors.accent }}
+            thumbColor={colors.text}
+            accessibilityLabel="Toggle quiet hours"
           />
         </View>
         <Text style={styles.helpText}>
@@ -223,6 +293,7 @@ export default function SettingsScreen() {
               maxLength={2}
               editable={quiet.enabled}
               style={[styles.input, !quiet.enabled && styles.btnDisabled]}
+              accessibilityLabel="Quiet hours start"
             />
           </View>
           <View style={{ flex: 1 }}>
@@ -234,10 +305,16 @@ export default function SettingsScreen() {
               maxLength={2}
               editable={quiet.enabled}
               style={[styles.input, !quiet.enabled && styles.btnDisabled]}
+              accessibilityLabel="Quiet hours end"
             />
           </View>
         </View>
-        <Pressable style={styles.secondaryBtn} onPress={onSaveQuiet}>
+        <Pressable
+          style={styles.secondaryBtn}
+          onPress={onSaveQuiet}
+          accessibilityRole="button"
+          accessibilityLabel="Save quiet hours"
+        >
           <Text style={styles.secondaryBtnText}>
             {quietSaved ? '✓ Saved' : 'Save quiet hours'}
           </Text>
@@ -251,68 +328,80 @@ export default function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40 },
-  h1: { color: '#F5F5F7', fontSize: 24, fontWeight: '700', marginBottom: 16 },
-  card: {
-    backgroundColor: '#16161D',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 14,
-  },
-  cardLabel: {
-    color: '#9A9AA2',
-    fontSize: 12,
-    marginBottom: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  rowBetween: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  miniLabel: { color: '#9A9AA2', fontSize: 11, marginBottom: 6 },
-  input: {
-    backgroundColor: '#0B0B0F',
-    color: '#F5F5F7',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    fontFamily: 'Courier',
-  },
-  cardValue: { color: '#F5F5F7', fontSize: 16, fontWeight: '600' },
-  helpText: { color: '#9A9AA2', fontSize: 13, lineHeight: 18, marginTop: 6 },
-  fineprint: { color: '#5C5C66', fontSize: 11, lineHeight: 15, marginTop: 10 },
-  tokenText: {
-    color: '#B8B8C2',
-    fontSize: 12,
-    fontFamily: 'Courier',
-    backgroundColor: '#0B0B0F',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 4,
-  },
-  primaryBtn: {
-    marginTop: 12,
-    backgroundColor: '#7C5CFF',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryBtnText: { color: '#fff', fontWeight: '700' },
-  secondaryBtn: {
-    marginTop: 10,
-    backgroundColor: '#26222E',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  secondaryBtnText: { color: '#F5F5F7', fontWeight: '600' },
-  btnDisabled: { opacity: 0.4 },
-  linkBtn: { marginTop: 8, paddingVertical: 8, alignItems: 'center' },
-  linkBtnText: { color: '#9A9AA2', fontSize: 13 },
-});
+function makeStyles(c: Palette) {
+  return StyleSheet.create({
+    container: { padding: 20, paddingBottom: 40 },
+    h1: { color: c.text, fontSize: 24, fontWeight: '700', marginBottom: 16 },
+    card: {
+      backgroundColor: c.card,
+      borderRadius: 14,
+      padding: 16,
+      marginBottom: 14,
+    },
+    cardLabel: {
+      color: c.textMuted,
+      fontSize: 12,
+      marginBottom: 10,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    rowBetween: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    dot: { width: 10, height: 10, borderRadius: 5 },
+    miniLabel: { color: c.textMuted, fontSize: 11, marginBottom: 6 },
+    input: {
+      backgroundColor: c.surface,
+      color: c.text,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 16,
+      fontFamily: 'Courier',
+    },
+    cardValue: { color: c.text, fontSize: 16, fontWeight: '600' },
+    helpText: { color: c.textMuted, fontSize: 13, lineHeight: 18, marginTop: 6 },
+    fineprint: { color: c.textFaint, fontSize: 11, lineHeight: 15, marginTop: 10 },
+    tokenText: {
+      color: c.text,
+      fontSize: 12,
+      fontFamily: 'Courier',
+      backgroundColor: c.surface,
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 4,
+    },
+    primaryBtn: {
+      marginTop: 12,
+      backgroundColor: c.accent,
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    primaryBtnText: { color: c.accentText, fontWeight: '700' },
+    secondaryBtn: {
+      marginTop: 10,
+      backgroundColor: c.cardAlt,
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    secondaryBtnText: { color: c.text, fontWeight: '600' },
+    btnDisabled: { opacity: 0.4 },
+    linkBtn: { marginTop: 8, paddingVertical: 8, alignItems: 'center' },
+    linkBtnText: { color: c.textMuted, fontSize: 13 },
+    segment: {
+      flexDirection: 'row',
+      backgroundColor: c.surface,
+      borderRadius: 12,
+      padding: 4,
+    },
+    segmentBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
+    segmentBtnActive: { backgroundColor: c.accent },
+    segmentText: { color: c.textMuted, fontWeight: '600' },
+    segmentTextActive: { color: c.accentText },
+  });
+}

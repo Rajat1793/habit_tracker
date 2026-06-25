@@ -11,6 +11,8 @@ import { Link, useRouter } from 'expo-router';
 import { useHabits } from '@/hooks/use-habits';
 import { isDueToday } from '@/lib/habits/frequency';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
+import { useColors, useThemedStyles } from '@/theme/theme-context';
+import type { Palette } from '@/theme/colors';
 
 function fmtTime(h: number, m: number) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
@@ -19,6 +21,8 @@ function fmtTime(h: number, m: number) {
 export default function HomeScreen() {
   const { habits, status, markDoneToday } = useHabits();
   const router = useRouter();
+  const colors = useColors();
+  const styles = useThemedStyles(makeStyles);
 
   const todays = useMemo(
     () => habits.filter((h) => isDueToday(h)),
@@ -28,7 +32,7 @@ export default function HomeScreen() {
   if (status === 'loading' || status === 'idle') {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#7C5CFF" />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -108,55 +112,57 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  heading: { color: '#F5F5F7', fontSize: 28, fontWeight: '700' },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  headerLink: { color: '#9A9AA2', fontSize: 14 },
-  addBtn: {
-    backgroundColor: '#7C5CFF',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-  },
-  addBtnText: { color: '#fff', fontWeight: '600' },
-  list: { paddingBottom: 32 },
-  separator: { height: 12 },
-  row: {
-    backgroundColor: '#16161D',
-    borderRadius: 16,
-    padding: 14,
-  },
-  rowMain: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  rowText: { flex: 1 },
-  emoji: { fontSize: 28 },
-  name: { color: '#F5F5F7', fontSize: 16, fontWeight: '600' },
-  meta: { color: '#9A9AA2', fontSize: 13, marginTop: 2 },
-  streakChip: {
-    backgroundColor: '#26222E',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  streakText: { color: '#FFB75C', fontWeight: '600' },
-  doneBtn: {
-    marginTop: 12,
-    backgroundColor: '#7C5CFF',
-    paddingVertical: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  doneBtnDone: { backgroundColor: '#1F2A1F' },
-  doneBtnText: { color: '#fff', fontWeight: '600' },
-  doneBtnTextDone: { color: '#7FD18B' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
-  emptyTitle: { color: '#F5F5F7', fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  emptyBody: { color: '#9A9AA2', textAlign: 'center', fontSize: 14 },
-});
+function makeStyles(c: Palette) {
+  return StyleSheet.create({
+    container: { flex: 1, paddingHorizontal: 20, paddingTop: 8 },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
+    heading: { color: c.text, fontSize: 28, fontWeight: '700' },
+    headerActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    headerLink: { color: c.textMuted, fontSize: 14 },
+    addBtn: {
+      backgroundColor: c.accent,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 999,
+    },
+    addBtnText: { color: c.accentText, fontWeight: '600' },
+    list: { paddingBottom: 32 },
+    separator: { height: 12 },
+    row: {
+      backgroundColor: c.card,
+      borderRadius: 16,
+      padding: 14,
+    },
+    rowMain: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    rowText: { flex: 1 },
+    emoji: { fontSize: 28 },
+    name: { color: c.text, fontSize: 16, fontWeight: '600' },
+    meta: { color: c.textMuted, fontSize: 13, marginTop: 2 },
+    streakChip: {
+      backgroundColor: c.cardAlt,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 999,
+    },
+    streakText: { color: c.streak, fontWeight: '600' },
+    doneBtn: {
+      marginTop: 12,
+      backgroundColor: c.accent,
+      paddingVertical: 10,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    doneBtnDone: { backgroundColor: c.cardAlt },
+    doneBtnText: { color: c.accentText, fontWeight: '600' },
+    doneBtnTextDone: { color: c.success },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+    emptyTitle: { color: c.text, fontSize: 18, fontWeight: '600', marginBottom: 6 },
+    emptyBody: { color: c.textMuted, textAlign: 'center', fontSize: 14 },
+  });
+}

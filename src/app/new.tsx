@@ -20,6 +20,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits, type HabitDraft } from '@/hooks/use-habits';
 import type { Frequency, Weekday } from '@/lib/habits/types';
+import { useColors, useThemedStyles } from '@/theme/theme-context';
+import type { Palette } from '@/theme/colors';
 
 const WEEKDAY_LABELS: { weekday: Weekday; label: string }[] = [
   { weekday: 1, label: 'S' }, // Sun
@@ -42,6 +44,8 @@ export default function NewHabitScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const editing = useHabit(params.id);
   const { createHabit, updateHabit } = useHabits();
+  const colors = useColors();
+  const styles = useThemedStyles(makeStyles);
 
   const [name, setName] = useState(editing?.name ?? '');
   const [emoji, setEmoji] = useState(editing?.emoji ?? '💧');
@@ -104,8 +108,9 @@ export default function NewHabitScreen() {
           value={name}
           onChangeText={setName}
           placeholder="Drink water"
-          placeholderTextColor="#5C5C66"
+          placeholderTextColor={colors.textFaint}
           style={styles.input}
+          accessibilityLabel="Habit name"
         />
 
         <Text style={styles.label}>Emoji</Text>
@@ -114,6 +119,7 @@ export default function NewHabitScreen() {
           onChangeText={setEmoji}
           maxLength={4}
           style={[styles.input, styles.emojiInput]}
+          accessibilityLabel="Habit emoji"
         />
 
         <Text style={styles.label}>Frequency</Text>
@@ -123,6 +129,9 @@ export default function NewHabitScreen() {
               key={k}
               onPress={() => setKind(k)}
               style={[styles.segmentBtn, kind === k && styles.segmentBtnActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: kind === k }}
+              accessibilityLabel={k === 'daily' ? 'Daily frequency' : 'Weekly frequency'}
             >
               <Text style={[styles.segmentText, kind === k && styles.segmentTextActive]}>
                 {k === 'daily' ? 'Daily' : 'Weekly'}
@@ -140,6 +149,9 @@ export default function NewHabitScreen() {
                   key={weekday}
                   onPress={() => toggleWeekday(weekday)}
                   style={[styles.dayChip, active && styles.dayChipActive]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Weekday ${weekday}`}
                 >
                   <Text style={[styles.dayChipText, active && styles.dayChipTextActive]}>
                     {label}
@@ -158,8 +170,9 @@ export default function NewHabitScreen() {
             keyboardType="number-pad"
             maxLength={2}
             placeholder="HH"
-            placeholderTextColor="#5C5C66"
+            placeholderTextColor={colors.textFaint}
             style={[styles.input, styles.timeInput]}
+            accessibilityLabel="Reminder hour"
           />
           <Text style={styles.timeColon}>:</Text>
           <TextInput
@@ -168,8 +181,9 @@ export default function NewHabitScreen() {
             keyboardType="number-pad"
             maxLength={2}
             placeholder="MM"
-            placeholderTextColor="#5C5C66"
+            placeholderTextColor={colors.textFaint}
             style={[styles.input, styles.timeInput]}
+            accessibilityLabel="Reminder minute"
           />
         </View>
 
@@ -177,13 +191,21 @@ export default function NewHabitScreen() {
           style={[styles.saveBtn, (!canSave || saving) && styles.saveBtnDisabled]}
           onPress={onSave}
           disabled={!canSave || saving}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canSave || saving }}
+          accessibilityLabel={editing ? 'Update habit' : 'Create habit'}
         >
           <Text style={styles.saveBtnText}>
             {saving ? 'Saving…' : editing ? 'Update habit' : 'Create habit'}
           </Text>
         </Pressable>
 
-        <Pressable onPress={() => router.back()} style={styles.cancelBtn}>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.cancelBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel and go back"
+        >
           <Text style={styles.cancelBtnText}>Cancel</Text>
         </Pressable>
       </ScrollView>
@@ -191,49 +213,51 @@ export default function NewHabitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  container: { padding: 20, paddingBottom: 40 },
-  h1: { color: '#F5F5F7', fontSize: 24, fontWeight: '700', marginBottom: 20 },
-  label: { color: '#9A9AA2', fontSize: 13, marginTop: 16, marginBottom: 8 },
-  input: {
-    backgroundColor: '#16161D',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: '#F5F5F7',
-    fontSize: 16,
-  },
-  emojiInput: { fontSize: 28, paddingVertical: 8 },
-  segment: { flexDirection: 'row', backgroundColor: '#16161D', borderRadius: 12, padding: 4 },
-  segmentBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
-  segmentBtnActive: { backgroundColor: '#7C5CFF' },
-  segmentText: { color: '#9A9AA2', fontWeight: '600' },
-  segmentTextActive: { color: '#fff' },
-  weekRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-  dayChip: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#16161D',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayChipActive: { backgroundColor: '#7C5CFF' },
-  dayChipText: { color: '#9A9AA2', fontWeight: '600' },
-  dayChipTextActive: { color: '#fff' },
-  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  timeInput: { flex: 1, textAlign: 'center', fontSize: 20, fontVariant: ['tabular-nums'] },
-  timeColon: { color: '#F5F5F7', fontSize: 22, fontWeight: '700' },
-  saveBtn: {
-    marginTop: 28,
-    backgroundColor: '#7C5CFF',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  cancelBtn: { marginTop: 12, paddingVertical: 12, alignItems: 'center' },
-  cancelBtnText: { color: '#9A9AA2', fontSize: 14 },
-});
+function makeStyles(c: Palette) {
+  return StyleSheet.create({
+    flex: { flex: 1 },
+    container: { padding: 20, paddingBottom: 40 },
+    h1: { color: c.text, fontSize: 24, fontWeight: '700', marginBottom: 20 },
+    label: { color: c.textMuted, fontSize: 13, marginTop: 16, marginBottom: 8 },
+    input: {
+      backgroundColor: c.card,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: c.text,
+      fontSize: 16,
+    },
+    emojiInput: { fontSize: 28, paddingVertical: 8 },
+    segment: { flexDirection: 'row', backgroundColor: c.card, borderRadius: 12, padding: 4 },
+    segmentBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
+    segmentBtnActive: { backgroundColor: c.accent },
+    segmentText: { color: c.textMuted, fontWeight: '600' },
+    segmentTextActive: { color: c.accentText },
+    weekRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
+    dayChip: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: c.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    dayChipActive: { backgroundColor: c.accent },
+    dayChipText: { color: c.textMuted, fontWeight: '600' },
+    dayChipTextActive: { color: c.accentText },
+    timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    timeInput: { flex: 1, textAlign: 'center', fontSize: 20, fontVariant: ['tabular-nums'] },
+    timeColon: { color: c.text, fontSize: 22, fontWeight: '700' },
+    saveBtn: {
+      marginTop: 28,
+      backgroundColor: c.accent,
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    saveBtnDisabled: { opacity: 0.5 },
+    saveBtnText: { color: c.accentText, fontSize: 16, fontWeight: '700' },
+    cancelBtn: { marginTop: 12, paddingVertical: 12, alignItems: 'center' },
+    cancelBtnText: { color: c.textMuted, fontSize: 14 },
+  });
+}
