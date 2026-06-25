@@ -8,6 +8,7 @@ import {
   installForegroundHandler,
 } from '@/lib/notifications/setup';
 import { ThemeProvider, useTheme } from '@/theme/theme-context';
+import { I18nProvider, useT } from '@/i18n';
 
 // Install the foreground handler at module load — before React even mounts.
 // This guarantees the handler is registered before any notification can
@@ -16,6 +17,7 @@ installForegroundHandler();
 
 function ThemedStack() {
   const { colors, scheme } = useTheme();
+  const t = useT();
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
@@ -30,10 +32,10 @@ function ThemedStack() {
         <Stack.Screen name="index" options={{ title: 'Streaks' }} />
         <Stack.Screen
           name="new"
-          options={{ title: 'New habit', presentation: 'modal' }}
+          options={{ title: t('form.titleNew'), presentation: 'modal' }}
         />
-        <Stack.Screen name="habit/[id]" options={{ title: 'Habit' }} />
-        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+        <Stack.Screen name="habit/[id]" options={{ title: '' }} />
+        <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
       </Stack>
     </>
   );
@@ -54,7 +56,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <ThemedStack />
+      <I18nProvider>
+        <ThemedStack />
+      </I18nProvider>
     </ThemeProvider>
   );
 }

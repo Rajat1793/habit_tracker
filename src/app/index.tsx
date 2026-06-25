@@ -12,6 +12,7 @@ import { useHabits } from '@/hooks/use-habits';
 import { isDueToday } from '@/lib/habits/frequency';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
+import { useT } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
 function fmtTime(h: number, m: number) {
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   const { habits, status, markDoneToday } = useHabits();
   const router = useRouter();
   const colors = useColors();
+  const t = useT();
   const styles = useThemedStyles(makeStyles);
 
   const todays = useMemo(
@@ -40,16 +42,16 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.heading}>Today</Text>
+        <Text style={styles.heading}>{t('home.title')}</Text>
         <View style={styles.headerActions}>
           <Link href="/settings" asChild>
-            <Pressable hitSlop={12}>
-              <Text style={styles.headerLink}>Settings</Text>
+            <Pressable hitSlop={12} accessibilityRole="link" accessibilityLabel={t('home.settings')}>
+              <Text style={styles.headerLink}>{t('home.settings')}</Text>
             </Pressable>
           </Link>
           <Link href="/new" asChild>
-            <Pressable style={styles.addBtn}>
-              <Text style={styles.addBtnText}>+ New</Text>
+            <Pressable style={styles.addBtn} accessibilityRole="link" accessibilityLabel={t('home.newHabit')}>
+              <Text style={styles.addBtnText}>{t('home.newHabit')}</Text>
             </Pressable>
           </Link>
         </View>
@@ -57,15 +59,13 @@ export default function HomeScreen() {
 
       {habits.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No habits yet</Text>
-          <Text style={styles.emptyBody}>
-            Tap “+ New” to create your first habit and schedule a reminder.
-          </Text>
+          <Text style={styles.emptyTitle}>{t('home.empty.noHabitsTitle')}</Text>
+          <Text style={styles.emptyBody}>{t('home.empty.noHabitsBody')}</Text>
         </View>
       ) : todays.length === 0 ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>Nothing due today</Text>
-          <Text style={styles.emptyBody}>Your weekly habits will surface here on their day.</Text>
+          <Text style={styles.emptyTitle}>{t('home.empty.nothingDueTitle')}</Text>
+          <Text style={styles.emptyBody}>{t('home.empty.nothingDueBody')}</Text>
         </View>
       ) : (
         <FlatList
@@ -82,25 +82,30 @@ export default function HomeScreen() {
                 <Pressable
                   style={styles.rowMain}
                   onPress={() => router.push(`/habit/${item.id}`)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.name}, ${t('detail.streakDays', { count: streak })}`}
                 >
                   <Text style={styles.emoji}>{item.emoji || '✨'}</Text>
                   <View style={styles.rowText}>
                     <Text style={styles.name}>{item.name}</Text>
                     <Text style={styles.meta}>
-                      {item.frequency.kind === 'daily' ? 'Daily' : 'Weekly'} · {time}
+                      {item.frequency.kind === 'daily' ? t('home.daily') : t('home.weekly')} · {time}
                     </Text>
                   </View>
                   <View style={styles.streakChip}>
-                    <Text style={styles.streakText}>🔥 {streak}</Text>
+                    <Text style={styles.streakText}>{t('home.streak', { count: streak })}</Text>
                   </View>
                 </Pressable>
                 <Pressable
                   style={[styles.doneBtn, done && styles.doneBtnDone]}
                   onPress={() => markDoneToday(item.id)}
                   disabled={done}
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: done }}
+                  accessibilityLabel={done ? t('home.done') : t('home.markDone')}
                 >
                   <Text style={[styles.doneBtnText, done && styles.doneBtnTextDone]}>
-                    {done ? '✓ Done' : 'Mark done'}
+                    {done ? t('home.done') : t('home.markDone')}
                   </Text>
                 </Pressable>
               </View>

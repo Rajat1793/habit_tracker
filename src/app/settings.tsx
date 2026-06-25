@@ -35,6 +35,7 @@ import {
 import { HABIT_CHANNEL_ID } from '@/lib/notifications/setup';
 import type { NotificationDeepLink } from '@/lib/habits/types';
 import { useColors, useTheme, useThemedStyles, type ThemeMode } from '@/theme/theme-context';
+import { SUPPORTED_LOCALES, useI18n, type LocalePref } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
 function clampHour(raw: string): number {
@@ -49,10 +50,15 @@ function statusColor(c: Palette, status: string): string {
   return c.warning;
 }
 
-const THEME_MODES: { value: ThemeMode; label: string }[] = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
+const THEME_MODES: { value: ThemeMode; labelKey: string }[] = [
+  { value: 'system', labelKey: 'settings.appearanceSystem' },
+  { value: 'light', labelKey: 'settings.appearanceLight' },
+  { value: 'dark', labelKey: 'settings.appearanceDark' },
+];
+
+const LOCALE_OPTIONS: { value: LocalePref; label: string }[] = [
+  { value: 'system', label: 'Auto' },
+  ...SUPPORTED_LOCALES.map((code) => ({ value: code, label: code.toUpperCase() })),
 ];
 
 export default function SettingsScreen() {
@@ -61,6 +67,7 @@ export default function SettingsScreen() {
   const { habits } = useHabits();
   const colors = useColors();
   const { mode, setMode } = useTheme();
+  const { pref: localePref, setPref: setLocalePref, t } = useI18n();
   const styles = useThemedStyles(makeStyles);
 
   const [copied, setCopied] = useState(false);
@@ -87,7 +94,7 @@ export default function SettingsScreen() {
 
   const onSendTest = async () => {
     if (!permission.granted) {
-      Alert.alert('Permission needed', 'Enable notifications first.');
+      Alert.alert(t('settings.permissionNeeded'), t('settings.permissionNeededBody'));
       return;
     }
     setTesting(true);
@@ -111,9 +118,9 @@ export default function SettingsScreen() {
           channelId: HABIT_CHANNEL_ID,
         },
       });
-      Alert.alert('Scheduled', 'A test notification will arrive in 3 seconds.');
+      Alert.alert(t('settings.scheduling'), t('settings.scheduledMsg'));
     } catch (err) {
-      Alert.alert('Failed', err instanceof Error ? err.message : String(err));
+      Alert.alert(t('settings.failed'), err instanceof Error ? err.message : String(err));
     } finally {
       setTesting(false);
     }
@@ -121,37 +128,61 @@ export default function SettingsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.h1}>Settings</Text>
+      <Text style={styles.h1}>{t('settings.title')}</Text>
 
       {/* Appearance */}
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Appearance</Text>
+        <Text style={styles.cardLabel}>{t('settings.appearance')}</Text>
         <View style={styles.segment}>
-          {THEME_MODES.map(({ value, label }) => (
+          {THEME_MODES.map(({ value, labelKey }) => (
             <Pressable
               key={value}
               onPress={() => setMode(value)}
               style={[styles.segmentBtn, mode === value && styles.segmentBtnActive]}
               accessibilityRole="button"
               accessibilityState={{ selected: mode === value }}
-              accessibilityLabel={`Theme ${label}`}
+              accessibilityLabel={t(labelKey)}
             >
               <Text
                 style={[styles.segmentText, mode === value && styles.segmentTextActive]}
               >
-                {label}
+                {t(labelKey)}
               </Text>
             </Pressable>
           ))}
         </View>
-        <Text style={styles.fineprint}>
-          “System” follows your device’s light/dark setting in real time.
-        </Text>
+        <Text style={styles.fineprint}>{t('settings.appearanceHint')}</Text>
+      </View>
+
+      {/* Language */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('settings.language')}</Text>
+        <View style={styles.segment}>
+          {LOCALE_OPTIONS.map(({ value, label }) => (
+            <Pressable
+              key={value}
+              onPress={() => setLocalePref(value)}
+              style={[styles.segmentBtn, localePref === value && styles.segmentBtnActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: localePref === value }}
+              accessibilityLabel={value === 'system' ? t('settings.languageSystem') : label}
+            >
+              <Text
+                style={[
+                  styles.segmentText,
+                  localePref === value && styles.segmentTextActive,
+                ]}
+              >
+                {value === 'system' ? t('settings.languageSystem') : label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       {/* Permission card */}
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Notification permission</Text>
+        <Text style={styles.cardLabel}>{t('settings.permission')}</Text>
         <View style={styles.row}>
           <View
             style={[styles.dot, { backgroundColor: statusColor(colors, permission.status) }]}
@@ -165,46 +196,44 @@ export default function SettingsScreen() {
             onPress={register}
             disabled={loading}
             accessibilityRole="button"
-            accessibilityLabel="Enable notifications"
+            accessibilityLabel={t('settings.enable')}
           >
             <Text style={styles.primaryBtnText}>
-              {loading ? 'Requesting…' : 'Enable notifications'}
+              {loading ? t('settings.requesting') : t('settings.enable')}
             </Text>
           </Pressable>
         )}
 
         {permission.status === 'denied' && (
           <>
-            <Text style={styles.helpText}>
-              Notifications are off for Streaks. You can re-enable them from system settings.
-            </Text>
+            <Text style={styles.helpText}>{t('settings.permissionDenied')}</Text>
             <Pressable
               style={styles.primaryBtn}
               onPress={openSettings}
               accessibilityRole="button"
-              accessibilityLabel="Open system settings"
+              accessibilityLabel={t('settings.openSystemSettings')}
             >
-              <Text style={styles.primaryBtnText}>Open system settings</Text>
+              <Text style={styles.primaryBtnText}>{t('settings.openSystemSettings')}</Text>
             </Pressable>
             <Pressable
               style={styles.linkBtn}
               onPress={refreshPermission}
               accessibilityRole="button"
-              accessibilityLabel="Refresh permission status"
+              accessibilityLabel={t('settings.refresh')}
             >
-              <Text style={styles.linkBtnText}>I changed it — refresh</Text>
+              <Text style={styles.linkBtnText}>{t('settings.refresh')}</Text>
             </Pressable>
           </>
         )}
 
         {permission.status === 'granted' && (
-          <Text style={styles.helpText}>Reminders and push notifications can arrive.</Text>
+          <Text style={styles.helpText}>{t('settings.permissionGranted')}</Text>
         )}
       </View>
 
       {/* Push token card */}
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Expo push token</Text>
+        <Text style={styles.cardLabel}>{t('settings.pushToken')}</Text>
         {token ? (
           <>
             <Text selectable style={styles.tokenText}>
@@ -214,17 +243,17 @@ export default function SettingsScreen() {
               style={styles.secondaryBtn}
               onPress={onCopy}
               accessibilityRole="button"
-              accessibilityLabel="Copy push token to clipboard"
+              accessibilityLabel={t('settings.copyToken')}
             >
-              <Text style={styles.secondaryBtnText}>{copied ? '✓ Copied' : 'Copy token'}</Text>
+              <Text style={styles.secondaryBtnText}>
+                {copied ? t('settings.copied') : t('settings.copyToken')}
+              </Text>
             </Pressable>
           </>
         ) : (
           <>
             <Text style={styles.helpText}>
-              {permission.granted
-                ? 'No token yet. Tap below to register this device.'
-                : 'Grant permission first, then register.'}
+              {permission.granted ? t('settings.noTokenGranted') : t('settings.noTokenDenied')}
             </Text>
             <Pressable
               style={[styles.primaryBtn, !permission.granted && styles.btnDisabled]}
@@ -232,37 +261,32 @@ export default function SettingsScreen() {
               disabled={!permission.granted || loading}
               accessibilityRole="button"
               accessibilityState={{ disabled: !permission.granted || loading }}
-              accessibilityLabel="Register for push notifications"
+              accessibilityLabel={t('settings.register')}
             >
               {loading ? (
                 <ActivityIndicator color={colors.accentText} />
               ) : (
-                <Text style={styles.primaryBtnText}>Register for push</Text>
+                <Text style={styles.primaryBtnText}>{t('settings.register')}</Text>
               )}
             </Pressable>
           </>
         )}
-        <Text style={styles.fineprint}>
-          Push requires a dev/standalone build — it does not work in Expo Go on SDK 53+.
-        </Text>
+        <Text style={styles.fineprint}>{t('settings.pushFineprint')}</Text>
       </View>
 
       {/* Foreground / deep-link tester */}
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Test foreground + deep link</Text>
-        <Text style={styles.helpText}>
-          Schedules a local notification in 3 seconds.{'\n'}
-          Keep the app open to see the foreground banner; lock the screen to see background.
-        </Text>
+        <Text style={styles.cardLabel}>{t('settings.testTitle')}</Text>
+        <Text style={styles.helpText}>{t('settings.testHint')}</Text>
         <Pressable
           style={styles.secondaryBtn}
           onPress={onSendTest}
           disabled={testing}
           accessibilityRole="button"
-          accessibilityLabel="Send test reminder in three seconds"
+          accessibilityLabel={t('settings.testBtn')}
         >
           <Text style={styles.secondaryBtnText}>
-            {testing ? 'Scheduling…' : 'Send test reminder in 3s'}
+            {testing ? t('settings.scheduling') : t('settings.testBtn')}
           </Text>
         </Pressable>
       </View>
@@ -270,42 +294,39 @@ export default function SettingsScreen() {
       {/* Quiet hours */}
       <View style={styles.card}>
         <View style={styles.rowBetween}>
-          <Text style={styles.cardLabel}>Quiet hours</Text>
+          <Text style={styles.cardLabel}>{t('settings.quietTitle')}</Text>
           <Switch
             value={quiet.enabled}
             onValueChange={(enabled) => setQuiet((q) => ({ ...q, enabled }))}
             trackColor={{ false: colors.switchTrackOff, true: colors.accent }}
             thumbColor={colors.text}
-            accessibilityLabel="Toggle quiet hours"
+            accessibilityLabel={t('settings.quietTitle')}
           />
         </View>
-        <Text style={styles.helpText}>
-          Reminders scheduled inside this window arrive silently (no sound, lower priority).
-          Wraps across midnight — e.g. 22 → 7 covers 22, 23, 0, 1…6.
-        </Text>
+        <Text style={styles.helpText}>{t('settings.quietHint')}</Text>
         <View style={[styles.row, { marginTop: 12, gap: 16 }]}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.miniLabel}>Start hour (0–23)</Text>
+            <Text style={styles.miniLabel}>{t('settings.quietStart')}</Text>
             <TextInput
               value={String(quiet.startHour)}
-              onChangeText={(t) => setQuiet((q) => ({ ...q, startHour: clampHour(t) }))}
+              onChangeText={(t2) => setQuiet((q) => ({ ...q, startHour: clampHour(t2) }))}
               keyboardType="number-pad"
               maxLength={2}
               editable={quiet.enabled}
               style={[styles.input, !quiet.enabled && styles.btnDisabled]}
-              accessibilityLabel="Quiet hours start"
+              accessibilityLabel={t('settings.quietStart')}
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.miniLabel}>End hour (0–23)</Text>
+            <Text style={styles.miniLabel}>{t('settings.quietEnd')}</Text>
             <TextInput
               value={String(quiet.endHour)}
-              onChangeText={(t) => setQuiet((q) => ({ ...q, endHour: clampHour(t) }))}
+              onChangeText={(t2) => setQuiet((q) => ({ ...q, endHour: clampHour(t2) }))}
               keyboardType="number-pad"
               maxLength={2}
               editable={quiet.enabled}
               style={[styles.input, !quiet.enabled && styles.btnDisabled]}
-              accessibilityLabel="Quiet hours end"
+              accessibilityLabel={t('settings.quietEnd')}
             />
           </View>
         </View>
@@ -313,16 +334,13 @@ export default function SettingsScreen() {
           style={styles.secondaryBtn}
           onPress={onSaveQuiet}
           accessibilityRole="button"
-          accessibilityLabel="Save quiet hours"
+          accessibilityLabel={t('settings.quietSaveBtn')}
         >
           <Text style={styles.secondaryBtnText}>
-            {quietSaved ? '✓ Saved' : 'Save quiet hours'}
+            {quietSaved ? t('settings.quietSaved') : t('settings.quietSaveBtn')}
           </Text>
         </Pressable>
-        <Text style={styles.fineprint}>
-          New habits picked up the setting automatically. Existing reminders apply it on the
-          next reschedule (edit / mark done).
-        </Text>
+        <Text style={styles.fineprint}>{t('settings.quietFineprint')}</Text>
       </View>
     </ScrollView>
   );

@@ -1,0 +1,133 @@
+import type { LocaleStrings } from './en';
+
+const es: LocaleStrings = {
+  common: {
+    cancel: 'Cancelar',
+    save: 'Guardar',
+    delete: 'Eliminar',
+    edit: 'Editar',
+    loading: 'Cargando…',
+    back: 'Atrás',
+  },
+
+  home: {
+    title: 'Hoy',
+    settings: 'Ajustes',
+    newHabit: '+ Nuevo',
+    empty: {
+      noHabitsTitle: 'Aún no hay hábitos',
+      noHabitsBody: 'Pulsa “+ Nuevo” para crear tu primer hábito y programar un recordatorio.',
+      nothingDueTitle: 'Nada pendiente hoy',
+      nothingDueBody: 'Tus hábitos semanales aparecerán aquí en su día.',
+    },
+    daily: 'Diario',
+    weekly: 'Semanal',
+    streak: '🔥 {{count}}',
+    markDone: 'Hecho',
+    done: '✓ Hecho',
+  },
+
+  detail: {
+    schedule: 'Programación',
+    scheduleDaily: 'Todos los días a las {{time}}',
+    scheduleWeekly: '{{days}} a las {{time}}',
+    lastCompleted: 'Última vez completado',
+    scheduledIds: 'IDs de notificaciones programadas',
+    noIds: '(ninguno — el permiso puede estar denegado)',
+    markToday: 'Marcar como hecho hoy',
+    doneToday: '✓ Hecho hoy',
+    editBtn: 'Editar hábito',
+    deleteBtn: 'Eliminar hábito',
+    notFoundTitle: 'Hábito no encontrado',
+    notFoundBody: 'Este recordatorio puede pertenecer a un hábito eliminado.',
+    backToToday: 'Volver a hoy',
+    deleteConfirmTitle: 'Eliminar hábito',
+    deleteConfirmBody: '“{{name}}” se eliminará y se cancelarán sus recordatorios.',
+    streakDays: '🔥 {{count}} días de racha',
+  },
+
+  form: {
+    titleNew: 'Nuevo hábito',
+    titleEdit: 'Editar hábito',
+    name: 'Nombre',
+    namePlaceholder: 'Beber agua',
+    emoji: 'Emoji',
+    frequency: 'Frecuencia',
+    reminderTime: 'Hora del recordatorio (24h)',
+    create: 'Crear hábito',
+    update: 'Actualizar hábito',
+    saving: 'Guardando…',
+    saveError: 'No se pudo guardar',
+  },
+
+  settings: {
+    title: 'Ajustes',
+    appearance: 'Apariencia',
+    appearanceSystem: 'Sistema',
+    appearanceLight: 'Claro',
+    appearanceDark: 'Oscuro',
+    appearanceHint: '“Sistema” sigue el ajuste claro/oscuro de tu dispositivo en tiempo real.',
+    language: 'Idioma',
+    languageSystem: 'Sistema',
+    permission: 'Permiso de notificaciones',
+    permissionGranted: 'Los recordatorios y notificaciones push pueden llegar.',
+    permissionDenied:
+      'Las notificaciones están desactivadas para Streaks. Puedes reactivarlas en los ajustes del sistema.',
+    enable: 'Activar notificaciones',
+    requesting: 'Solicitando…',
+    openSystemSettings: 'Abrir ajustes del sistema',
+    refresh: 'Lo he cambiado — actualizar',
+    pushToken: 'Token push de Expo',
+    noTokenGranted: 'Aún no hay token. Pulsa abajo para registrar este dispositivo.',
+    noTokenDenied: 'Primero concede el permiso y luego regístrate.',
+    register: 'Registrar para push',
+    copyToken: 'Copiar token',
+    copied: '✓ Copiado',
+    pushFineprint:
+      'Push requiere una build dev/standalone — no funciona en Expo Go con SDK 53+.',
+    testTitle: 'Probar primer plano + deep link',
+    testHint:
+      'Programa una notificación local en 3 segundos.\nDeja la app abierta para ver el banner; bloquea para ver el segundo plano.',
+    testBtn: 'Enviar recordatorio de prueba en 3 s',
+    scheduling: 'Programando…',
+    scheduledMsg: 'Llegará una notificación de prueba en 3 segundos.',
+    permissionNeeded: 'Permiso necesario',
+    permissionNeededBody: 'Activa primero las notificaciones.',
+    quietTitle: 'Horas silenciosas',
+    quietHint:
+      'Los recordatorios programados dentro de esta franja llegan en silencio (sin sonido, prioridad baja). Cruza medianoche — p. ej. 22 → 7 cubre 22, 23, 0, 1…6.',
+    quietStart: 'Hora inicio (0–23)',
+    quietEnd: 'Hora fin (0–23)',
+    quietSaveBtn: 'Guardar horas silenciosas',
+    quietSaved: '✓ Guardado',
+    quietFineprint:
+      'Los nuevos hábitos lo aplican automáticamente. Los recordatorios existentes lo aplican en la próxima reprogramación.',
+    backupTitle: 'Respaldo',
+    backupExport: 'Copiar respaldo al portapapeles',
+    backupExported: '✓ JSON copiado',
+    backupImport: 'Pegar y restaurar desde el portapapeles',
+    backupImportConfirmTitle: 'Restaurar desde el portapapeles',
+    backupImportConfirmBody: 'Esto reemplazará tus hábitos actuales. ¿Estás seguro?',
+    backupImportSuccess: 'Se restauraron {{count}} hábitos.',
+    backupImportFail: 'No se pudo interpretar el portapapeles como respaldo válido de Streaks.',
+    backupEmpty: 'El portapapeles está vacío.',
+    onboardingReset: 'Mostrar la introducción de nuevo',
+    failed: 'Falló',
+  },
+
+  onboarding: {
+    skip: 'Saltar',
+    next: 'Siguiente',
+    done: 'Empezar',
+    s1Title: 'Construye rachas',
+    s1Body: 'Crea hábitos, márcalos cada día y mira crecer el 🔥.',
+    s2Title: 'Recordatorios que funcionan',
+    s2Body:
+      'Las notificaciones locales se disparan a tiempo. Android usa un canal de alta importancia para que realmente suenen.',
+    s3Title: 'Un toque, un hábito',
+    s3Body:
+      'Tocar un recordatorio te lleva directo a ese hábito — incluso desde la pantalla bloqueada.',
+  },
+};
+
+export default es;

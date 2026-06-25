@@ -1,0 +1,133 @@
+import type { LocaleStrings } from './en';
+
+const hi: LocaleStrings = {
+  common: {
+    cancel: 'रद्द करें',
+    save: 'सहेजें',
+    delete: 'हटाएँ',
+    edit: 'संपादित करें',
+    loading: 'लोड हो रहा है…',
+    back: 'वापस',
+  },
+
+  home: {
+    title: 'आज',
+    settings: 'सेटिंग्स',
+    newHabit: '+ नई',
+    empty: {
+      noHabitsTitle: 'अभी कोई आदत नहीं',
+      noHabitsBody: 'पहली आदत बनाने और रिमाइंडर सेट करने के लिए “+ नई” पर टैप करें।',
+      nothingDueTitle: 'आज कुछ नहीं है',
+      nothingDueBody: 'आपकी साप्ताहिक आदतें अपने दिन यहाँ दिखेंगी।',
+    },
+    daily: 'दैनिक',
+    weekly: 'साप्ताहिक',
+    streak: '🔥 {{count}}',
+    markDone: 'पूरा करें',
+    done: '✓ पूरा',
+  },
+
+  detail: {
+    schedule: 'अनुसूची',
+    scheduleDaily: 'हर दिन {{time}} पर',
+    scheduleWeekly: '{{days}} को {{time}} पर',
+    lastCompleted: 'अंतिम बार पूरा',
+    scheduledIds: 'अनुसूचित नोटिफिकेशन IDs',
+    noIds: '(कोई नहीं — अनुमति अस्वीकृत हो सकती है)',
+    markToday: 'आज के लिए पूरा करें',
+    doneToday: '✓ आज पूरा हुआ',
+    editBtn: 'आदत संपादित करें',
+    deleteBtn: 'आदत हटाएँ',
+    notFoundTitle: 'आदत नहीं मिली',
+    notFoundBody: 'यह रिमाइंडर शायद उस आदत का है जो हटा दी गई।',
+    backToToday: 'आज पर वापस',
+    deleteConfirmTitle: 'आदत हटाएँ',
+    deleteConfirmBody: '“{{name}}” हटा दी जाएगी और इसके रिमाइंडर रद्द हो जाएँगे।',
+    streakDays: '🔥 {{count}} दिन की लय',
+  },
+
+  form: {
+    titleNew: 'नई आदत',
+    titleEdit: 'आदत संपादित करें',
+    name: 'नाम',
+    namePlaceholder: 'पानी पिएँ',
+    emoji: 'इमोजी',
+    frequency: 'आवृत्ति',
+    reminderTime: 'रिमाइंडर समय (24h)',
+    create: 'आदत बनाएँ',
+    update: 'आदत अपडेट करें',
+    saving: 'सहेज रहे हैं…',
+    saveError: 'सहेजा नहीं जा सका',
+  },
+
+  settings: {
+    title: 'सेटिंग्स',
+    appearance: 'रूप',
+    appearanceSystem: 'सिस्टम',
+    appearanceLight: 'लाइट',
+    appearanceDark: 'डार्क',
+    appearanceHint: '“सिस्टम” आपके डिवाइस की लाइट/डार्क सेटिंग का अनुसरण करता है।',
+    language: 'भाषा',
+    languageSystem: 'सिस्टम',
+    permission: 'नोटिफिकेशन अनुमति',
+    permissionGranted: 'रिमाइंडर और पुश नोटिफिकेशन आ सकते हैं।',
+    permissionDenied:
+      'Streaks के लिए नोटिफिकेशन बंद हैं। आप इन्हें सिस्टम सेटिंग्स से दोबारा चालू कर सकते हैं।',
+    enable: 'नोटिफिकेशन चालू करें',
+    requesting: 'अनुरोध हो रहा है…',
+    openSystemSettings: 'सिस्टम सेटिंग्स खोलें',
+    refresh: 'मैंने बदला — रिफ्रेश करें',
+    pushToken: 'Expo पुश टोकन',
+    noTokenGranted: 'अभी कोई टोकन नहीं। इस डिवाइस को रजिस्टर करने के लिए नीचे टैप करें।',
+    noTokenDenied: 'पहले अनुमति दें, फिर रजिस्टर करें।',
+    register: 'पुश के लिए रजिस्टर करें',
+    copyToken: 'टोकन कॉपी करें',
+    copied: '✓ कॉपी हुआ',
+    pushFineprint:
+      'पुश के लिए dev/standalone बिल्ड चाहिए — Expo Go SDK 53+ में काम नहीं करता।',
+    testTitle: 'फ़ोरग्राउंड + डीप लिंक परीक्षण',
+    testHint:
+      '3 सेकंड में लोकल नोटिफिकेशन शेड्यूल होगा।\nऐप खुला रखकर बैनर देखें; स्क्रीन लॉक करके बैकग्राउंड देखें।',
+    testBtn: '3 सेकंड में परीक्षण भेजें',
+    scheduling: 'शेड्यूल हो रहा है…',
+    scheduledMsg: '3 सेकंड में परीक्षण नोटिफिकेशन आएगा।',
+    permissionNeeded: 'अनुमति चाहिए',
+    permissionNeededBody: 'पहले नोटिफिकेशन चालू करें।',
+    quietTitle: 'शांत समय',
+    quietHint:
+      'इस विंडो में शेड्यूल किए रिमाइंडर बिना आवाज़ के और कम प्राथमिकता पर आते हैं। आधी रात पार होती है — जैसे 22 → 7 में 22, 23, 0, 1…6 आते हैं।',
+    quietStart: 'शुरू (0–23)',
+    quietEnd: 'अंत (0–23)',
+    quietSaveBtn: 'शांत समय सहेजें',
+    quietSaved: '✓ सहेजा गया',
+    quietFineprint:
+      'नई आदतें इसे स्वतः उठाती हैं। मौजूदा रिमाइंडर अगले रीशेड्यूल पर लागू करते हैं।',
+    backupTitle: 'बैकअप',
+    backupExport: 'क्लिपबोर्ड पर बैकअप कॉपी करें',
+    backupExported: '✓ JSON कॉपी हुआ',
+    backupImport: 'क्लिपबोर्ड से पेस्ट करके पुनर्स्थापित करें',
+    backupImportConfirmTitle: 'क्लिपबोर्ड से पुनर्स्थापित करें',
+    backupImportConfirmBody: 'यह आपकी मौजूदा आदतें बदल देगा। क्या आप पक्के हैं?',
+    backupImportSuccess: '{{count}} आदतें पुनर्स्थापित हुईं।',
+    backupImportFail: 'क्लिपबोर्ड वैध Streaks बैकअप के रूप में पार्स नहीं हो सका।',
+    backupEmpty: 'क्लिपबोर्ड खाली है।',
+    onboardingReset: 'ऑनबोर्डिंग दोबारा दिखाएँ',
+    failed: 'विफल',
+  },
+
+  onboarding: {
+    skip: 'छोड़ें',
+    next: 'अगला',
+    done: 'शुरू करें',
+    s1Title: 'लय बनाएँ',
+    s1Body: 'आदतें बनाएँ, उन्हें रोज़ पूरा करें, और 🔥 बढ़ते देखें।',
+    s2Title: 'जो रिमाइंडर काम करें',
+    s2Body:
+      'लोकल नोटिफिकेशन अनुसूची पर चलते हैं। Android एक उच्च-महत्व चैनल का उपयोग करता है ताकि वे वास्तव में बजें।',
+    s3Title: 'एक टैप, एक आदत',
+    s3Body:
+      'रिमाइंडर पर टैप करने से सीधे उस आदत का गहरा लिंक खुलता है — लॉक स्क्रीन से भी।',
+  },
+};
+
+export default hi;

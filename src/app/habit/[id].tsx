@@ -14,6 +14,7 @@ import { useHabit, useHabits } from '@/hooks/use-habits';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
 import { isWeekly, type Weekday } from '@/lib/habits/types';
 import { useThemedStyles } from '@/theme/theme-context';
+import { useT } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
 const WEEKDAY_NAMES: Record<Weekday, string> = {
@@ -36,11 +37,12 @@ export default function HabitDetailScreen() {
   const habit = useHabit(id);
   const { markDoneToday, deleteHabit, status } = useHabits();
   const styles = useThemedStyles(makeStyles);
+  const t = useT();
 
   if (status !== 'ready') {
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>Loading…</Text>
+        <Text style={styles.muted}>{t('common.loading')}</Text>
       </View>
     );
   }
@@ -48,18 +50,16 @@ export default function HabitDetailScreen() {
   if (!habit) {
     return (
       <View style={styles.center}>
-        <Stack.Screen options={{ title: 'Not found' }} />
-        <Text style={styles.h1}>Habit not found</Text>
-        <Text style={styles.muted}>
-          This reminder may belong to a habit that was deleted.
-        </Text>
+        <Stack.Screen options={{ title: t('detail.notFoundTitle') }} />
+        <Text style={styles.h1}>{t('detail.notFoundTitle')}</Text>
+        <Text style={styles.muted}>{t('detail.notFoundBody')}</Text>
         <Pressable
           style={styles.primaryBtn}
           onPress={() => router.replace('/')}
           accessibilityRole="button"
-          accessibilityLabel="Back to today"
+          accessibilityLabel={t('detail.backToToday')}
         >
-          <Text style={styles.primaryBtnText}>Back to today</Text>
+          <Text style={styles.primaryBtnText}>{t('detail.backToToday')}</Text>
         </Pressable>
       </View>
     );
@@ -71,12 +71,12 @@ export default function HabitDetailScreen() {
 
   const onDelete = () => {
     Alert.alert(
-      'Delete habit',
-      `“${habit.name}” will be removed and its reminders cancelled.`,
+      t('detail.deleteConfirmTitle'),
+      t('detail.deleteConfirmBody', { name: habit.name }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             await deleteHabit(habit.id);
@@ -95,32 +95,35 @@ export default function HabitDetailScreen() {
         <Text style={styles.emoji}>{habit.emoji}</Text>
         <Text style={styles.name}>{habit.name}</Text>
         <View style={styles.streakChip}>
-          <Text style={styles.streakText}>🔥 {streak} day streak</Text>
+          <Text style={styles.streakText}>{t('detail.streakDays', { count: streak })}</Text>
         </View>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Schedule</Text>
+        <Text style={styles.cardLabel}>{t('detail.schedule')}</Text>
         <Text style={styles.cardValue}>
           {habit.frequency.kind === 'daily'
-            ? `Every day at ${time}`
-            : `${isWeekly(habit.frequency)
-                ? habit.frequency.weekdays.map((w) => WEEKDAY_NAMES[w]).join(', ')
-                : ''} at ${time}`}
+            ? t('detail.scheduleDaily', { time })
+            : t('detail.scheduleWeekly', {
+                days: isWeekly(habit.frequency)
+                  ? habit.frequency.weekdays.map((w) => WEEKDAY_NAMES[w]).join(', ')
+                  : '',
+                time,
+              })}
         </Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Last completed</Text>
+        <Text style={styles.cardLabel}>{t('detail.lastCompleted')}</Text>
         <Text style={styles.cardValue}>{habit.lastCompletedISO ?? '—'}</Text>
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardLabel}>Scheduled notification IDs</Text>
+        <Text style={styles.cardLabel}>{t('detail.scheduledIds')}</Text>
         <Text style={styles.cardMono}>
           {habit.notificationIds.length > 0
             ? habit.notificationIds.join('\n')
-            : '(none — permission may be denied)'}
+            : t('detail.noIds')}
         </Text>
       </View>
 
@@ -130,10 +133,10 @@ export default function HabitDetailScreen() {
         disabled={done}
         accessibilityRole="button"
         accessibilityState={{ disabled: done }}
-        accessibilityLabel={done ? 'Already done today' : 'Mark done for today'}
+        accessibilityLabel={done ? t('detail.doneToday') : t('detail.markToday')}
       >
         <Text style={[styles.primaryBtnText, done && styles.primaryBtnTextDone]}>
-          {done ? '✓ Done today' : 'Mark done for today'}
+          {done ? t('detail.doneToday') : t('detail.markToday')}
         </Text>
       </Pressable>
 
@@ -141,18 +144,18 @@ export default function HabitDetailScreen() {
         style={styles.secondaryBtn}
         onPress={() => router.push({ pathname: '/new', params: { id: habit.id } })}
         accessibilityRole="button"
-        accessibilityLabel="Edit habit"
+        accessibilityLabel={t('detail.editBtn')}
       >
-        <Text style={styles.secondaryBtnText}>Edit habit</Text>
+        <Text style={styles.secondaryBtnText}>{t('detail.editBtn')}</Text>
       </Pressable>
 
       <Pressable
         style={styles.dangerBtn}
         onPress={onDelete}
         accessibilityRole="button"
-        accessibilityLabel="Delete habit"
+        accessibilityLabel={t('detail.deleteBtn')}
       >
-        <Text style={styles.dangerBtnText}>Delete habit</Text>
+        <Text style={styles.dangerBtnText}>{t('detail.deleteBtn')}</Text>
       </Pressable>
     </ScrollView>
   );

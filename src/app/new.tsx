@@ -21,6 +21,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits, type HabitDraft } from '@/hooks/use-habits';
 import type { Frequency, Weekday } from '@/lib/habits/types';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
+import { useT } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
 const WEEKDAY_LABELS: { weekday: Weekday; label: string }[] = [
@@ -45,6 +46,7 @@ export default function NewHabitScreen() {
   const editing = useHabit(params.id);
   const { createHabit, updateHabit } = useHabits();
   const colors = useColors();
+  const t = useT();
   const styles = useThemedStyles(makeStyles);
 
   const [name, setName] = useState(editing?.name ?? '');
@@ -57,7 +59,7 @@ export default function NewHabitScreen() {
   );
   const [saving, setSaving] = useState(false);
 
-  const title = editing ? 'Edit habit' : 'New habit';
+  const title = editing ? t('form.titleEdit') : t('form.titleNew');
 
   const frequency: Frequency = useMemo(() => {
     const h = clampInt(hour, 0, 23);
@@ -89,7 +91,7 @@ export default function NewHabitScreen() {
       }
       router.back();
     } catch (err) {
-      Alert.alert('Could not save', err instanceof Error ? err.message : String(err));
+      Alert.alert(t('form.saveError'), err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -103,26 +105,26 @@ export default function NewHabitScreen() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         <Text style={styles.h1}>{title}</Text>
 
-        <Text style={styles.label}>Name</Text>
+        <Text style={styles.label}>{t('form.name')}</Text>
         <TextInput
           value={name}
           onChangeText={setName}
-          placeholder="Drink water"
+          placeholder={t('form.namePlaceholder')}
           placeholderTextColor={colors.textFaint}
           style={styles.input}
-          accessibilityLabel="Habit name"
+          accessibilityLabel={t('form.name')}
         />
 
-        <Text style={styles.label}>Emoji</Text>
+        <Text style={styles.label}>{t('form.emoji')}</Text>
         <TextInput
           value={emoji}
           onChangeText={setEmoji}
           maxLength={4}
           style={[styles.input, styles.emojiInput]}
-          accessibilityLabel="Habit emoji"
+          accessibilityLabel={t('form.emoji')}
         />
 
-        <Text style={styles.label}>Frequency</Text>
+        <Text style={styles.label}>{t('form.frequency')}</Text>
         <View style={styles.segment}>
           {(['daily', 'weekly'] as const).map((k) => (
             <Pressable
@@ -131,10 +133,10 @@ export default function NewHabitScreen() {
               style={[styles.segmentBtn, kind === k && styles.segmentBtnActive]}
               accessibilityRole="button"
               accessibilityState={{ selected: kind === k }}
-              accessibilityLabel={k === 'daily' ? 'Daily frequency' : 'Weekly frequency'}
+              accessibilityLabel={k === 'daily' ? t('home.daily') : t('home.weekly')}
             >
               <Text style={[styles.segmentText, kind === k && styles.segmentTextActive]}>
-                {k === 'daily' ? 'Daily' : 'Weekly'}
+                {k === 'daily' ? t('home.daily') : t('home.weekly')}
               </Text>
             </Pressable>
           ))}
@@ -162,7 +164,7 @@ export default function NewHabitScreen() {
           </View>
         )}
 
-        <Text style={styles.label}>Reminder time (24h)</Text>
+        <Text style={styles.label}>{t('form.reminderTime')}</Text>
         <View style={styles.timeRow}>
           <TextInput
             value={hour}
@@ -193,10 +195,10 @@ export default function NewHabitScreen() {
           disabled={!canSave || saving}
           accessibilityRole="button"
           accessibilityState={{ disabled: !canSave || saving }}
-          accessibilityLabel={editing ? 'Update habit' : 'Create habit'}
+          accessibilityLabel={editing ? t('form.update') : t('form.create')}
         >
           <Text style={styles.saveBtnText}>
-            {saving ? 'Saving…' : editing ? 'Update habit' : 'Create habit'}
+            {saving ? t('form.saving') : editing ? t('form.update') : t('form.create')}
           </Text>
         </Pressable>
 
@@ -204,9 +206,9 @@ export default function NewHabitScreen() {
           onPress={() => router.back()}
           style={styles.cancelBtn}
           accessibilityRole="button"
-          accessibilityLabel="Cancel and go back"
+          accessibilityLabel={t('common.cancel')}
         >
-          <Text style={styles.cancelBtnText}>Cancel</Text>
+          <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
