@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,6 +13,7 @@ import { isDueToday } from '@/lib/habits/frequency';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
 import { useT } from '@/i18n';
+import { ConfettiBurst, type ConfettiHandle } from '@/components/confetti-burst';
 import type { Palette } from '@/theme/colors';
 
 function fmtTime(h: number, m: number) {
@@ -31,6 +32,23 @@ export default function HomeScreen() {
     [habits],
   );
 
+  const pending = useMemo(
+    () => todays.filter((h) => !isDoneToday(h)).length,
+    [todays],
+  );
+
+  // Fire confetti exactly when the last pending habit gets marked done.
+  // Skip the case where the user simply never had any habits due (pending was already 0).
+  const confettiRef = useRef<ConfettiHandle>(null);
+  const prevPendingRef = useRef<number | null>(null);
+  useEffect(() => {
+    const prev = prevPendingRef.current;
+    if (prev !== null && prev > 0 && pending === 0 && todays.length > 0) {
+      confettiRef.current?.fire();
+    }
+    prevPendingRef.current = pending;
+  }, [pending, todays.length]);
+
   if (status === 'loading' || status === 'idle') {
     return (
       <View style={styles.center}>
@@ -41,6 +59,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      <ConfettiBurst ref={confettiRef} />
       <View style={styles.header}>
         <Text style={styles.heading}>{t('home.title')}</Text>
         <View style={styles.headerActions}>
