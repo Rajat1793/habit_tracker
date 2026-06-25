@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useNotificationRouter } from '@/hooks/use-notification-router';
 import { ensureNotificationCategory } from '@/lib/notifications/actions';
@@ -7,6 +7,7 @@ import {
   ensureAndroidChannel,
   installForegroundHandler,
 } from '@/lib/notifications/setup';
+import { isOnboarded } from '@/lib/onboarding/state';
 import { ThemeProvider, useTheme } from '@/theme/theme-context';
 import { I18nProvider, useT } from '@/i18n';
 
@@ -36,9 +37,36 @@ function ThemedStack() {
         />
         <Stack.Screen name="habit/[id]" options={{ title: '' }} />
         <Stack.Screen name="settings" options={{ title: t('settings.title') }} />
+        <Stack.Screen
+          name="onboarding"
+          options={{ headerShown: false, presentation: 'fullScreenModal' }}
+        />
       </Stack>
     </>
   );
+}
+
+/**
+ * Redirect first-time users to /onboarding once the navigator has mounted.
+ * We wait for `useSegments` to return a non-empty array so we don't push
+ * before expo-router's Root is ready.
+ */
+function useFirstLaunchGuard() {
+  const router = useRouter();
+  const segments = useSegments();
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    if (checked) return;
+    if (segments.length === 0) return; // wait for router to be ready
+    (async () => {
+      const seen = await isOnboarded();
+      setChecked(true);
+      if (!seen && segments[0] !== 'onboarding') {
+        router.replace('/onboarding');
+      }
+    })();
+  }, [segments, checked, router]);
 }
 
 export default function RootLayout() {
@@ -53,6 +81,7 @@ export default function RootLayout() {
   // Wires both local AND push notification taps to expo-router. Same handler.
   // Also dispatches the Done / Snooze action buttons.
   useNotificationRouter();
+  useFirstLaunchGuard();
 
   return (
     <ThemeProvider>
