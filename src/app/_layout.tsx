@@ -62,11 +62,14 @@ function useFirstLaunchGuard() {
 
   useEffect(() => {
     if (checked) return;
-    if (segments.length === 0) return; // wait for router to be ready
+    // expo-router types segments as a route-specific tuple; treat it as a
+    // plain string array for the readiness/route guard below.
+    const segs = segments as readonly string[];
+    if (segs.length === 0) return; // wait for router to be ready
     (async () => {
       const seen = await isOnboarded();
       setChecked(true);
-      if (!seen && segments[0] !== 'onboarding') {
+      if (!seen && segs[0] !== 'onboarding') {
         router.replace('/onboarding');
       }
     })();

@@ -153,7 +153,10 @@ const en = {
     hintOnboardingReset: 'Shows the welcome carousel the next time you launch.',
     allDoneCelebration: 'All habits done for today. Great work.',
   },
-} as const;
+};
 
+// No `as const` here on purpose: `LocaleStrings` must have `string` leaves so
+// translated locale files (hi, es) are assignable. Keys/structure are still
+// enforced; only the literal values are widened.
 export type LocaleStrings = typeof en;
 export default en;

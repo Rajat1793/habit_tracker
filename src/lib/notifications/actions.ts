@@ -8,6 +8,7 @@
  */
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
+import { Platform } from 'react-native';
 import { getById } from '@/lib/habits/storage';
 import type { NotificationDeepLink } from '@/lib/habits/types';
 import { HABIT_CHANNEL_ID } from './setup';
@@ -27,6 +28,12 @@ let categoryInstalled = false;
  */
 export async function ensureNotificationCategory(): Promise<void> {
   if (categoryInstalled) return;
+  // Notification categories (action buttons) are a native-only feature;
+  // expo-notifications has no web implementation, so skip on web.
+  if (Platform.OS === 'web') {
+    categoryInstalled = true;
+    return;
+  }
   await Notifications.setNotificationCategoryAsync(HABIT_CATEGORY_ID, [
     {
       identifier: ACTION_DONE,

@@ -9,6 +9,7 @@
  */
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
+import { Platform } from 'react-native';
 import { isDaily, isWeekly, type Habit, type NotificationDeepLink } from '../habits/types';
 import { HABIT_CATEGORY_ID } from './actions';
 import { isInQuietHours, loadQuietHours } from './quiet-hours';
@@ -24,7 +25,7 @@ function buildContent(
     body: 'Tap to log it.',
     data,
     // Suppress sound inside quiet hours; reminder still arrives silently.
-    sound: quiet ? null : 'default',
+    sound: quiet ? false : 'default',
     categoryIdentifier: HABIT_CATEGORY_ID,
     priority: quiet
       ? Notifications.AndroidNotificationPriority.LOW
@@ -34,6 +35,9 @@ function buildContent(
 
 /** Schedule reminders for a habit; returns IDs the caller must persist. */
 export async function scheduleHabit(habit: Habit): Promise<string[]> {
+  // Scheduled local notifications aren't supported on web; skip silently so
+  // habit creation still succeeds. (Reminders simply don't fire on web.)
+  if (Platform.OS === 'web') return [];
   const perm = await getPermissions();
   if (!perm.granted) return [];
 
