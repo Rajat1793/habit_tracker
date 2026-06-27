@@ -12,6 +12,7 @@ import { useHabits } from '@/hooks/use-habits';
 import { isDueToday } from '@/lib/habits/frequency';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
+import { typography } from '@/theme/typography';
 import { useT } from '@/i18n';
 import { ConfettiBurst, type ConfettiHandle } from '@/components/confetti-burst';
 import type { Palette } from '@/theme/colors';
@@ -166,16 +167,16 @@ function makeStyles(c: Palette) {
       justifyContent: 'space-between',
       marginBottom: 16,
     },
-    heading: { color: c.text, fontSize: 28, fontWeight: '700' },
+    heading: { ...typography.pageTitle, color: c.text },
     headerActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-    headerLink: { color: c.textMuted, fontSize: 14 },
+    headerLink: { ...typography.button, color: c.textMuted },
     addBtn: {
       backgroundColor: c.accent,
       paddingHorizontal: 14,
       paddingVertical: 8,
       borderRadius: 999,
     },
-    addBtnText: { color: c.accentText, fontWeight: '600' },
+    addBtnText: { ...typography.button, color: c.accentText },
     list: { paddingBottom: 32 },
     separator: { height: 12 },
     row: {
@@ -186,15 +187,15 @@ function makeStyles(c: Palette) {
     rowMain: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     rowText: { flex: 1 },
     emoji: { fontSize: 28 },
-    name: { color: c.text, fontSize: 16, fontWeight: '600' },
-    meta: { color: c.textMuted, fontSize: 13, marginTop: 2 },
+    name: { ...typography.headlineSm, color: c.text },
+    meta: { ...typography.meta, color: c.textMuted, marginTop: 2 },
     streakChip: {
       backgroundColor: c.cardAlt,
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: 999,
     },
-    streakText: { color: c.streak, fontWeight: '600' },
+    streakText: { ...typography.badge, color: c.streak },
     doneBtn: {
       marginTop: 12,
       backgroundColor: c.accent,
@@ -203,10 +204,10 @@ function makeStyles(c: Palette) {
       alignItems: 'center',
     },
     doneBtnDone: { backgroundColor: c.cardAlt },
-    doneBtnText: { color: c.accentText, fontWeight: '600' },
+    doneBtnText: { ...typography.button, color: c.accentText },
     doneBtnTextDone: { color: c.success },
     empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
-    emptyTitle: { color: c.text, fontSize: 18, fontWeight: '600', marginBottom: 6 },
-    emptyBody: { color: c.textMuted, textAlign: 'center', fontSize: 14 },
+    emptyTitle: { ...typography.headlineSm, color: c.text, marginBottom: 6 },
+    emptyBody: { ...typography.body, color: c.textMuted, textAlign: 'center' },
   });
 }

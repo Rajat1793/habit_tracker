@@ -21,6 +21,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits, type HabitDraft } from '@/hooks/use-habits';
 import type { Frequency, Weekday } from '@/lib/habits/types';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
+import { typography } from '@/theme/typography';
 import { useT } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
@@ -221,8 +222,8 @@ function makeStyles(c: Palette) {
   return StyleSheet.create({
     flex: { flex: 1 },
     container: { padding: 20, paddingBottom: 40 },
-    h1: { color: c.text, fontSize: 24, fontWeight: '700', marginBottom: 20 },
-    label: { color: c.textMuted, fontSize: 13, marginTop: 16, marginBottom: 8 },
+    h1: { ...typography.headlineLg, color: c.text, marginBottom: 20 },
+    label: { ...typography.sectionLabel, color: c.textMuted, marginTop: 16, marginBottom: 8 },
     input: {
       backgroundColor: c.card,
       borderRadius: 12,
@@ -260,8 +261,8 @@ function makeStyles(c: Palette) {
       alignItems: 'center',
     },
     saveBtnDisabled: { opacity: 0.5 },
-    saveBtnText: { color: c.accentText, fontSize: 16, fontWeight: '700' },
+    saveBtnText: { ...typography.buttonLg, color: c.accentText },
     cancelBtn: { marginTop: 12, paddingVertical: 12, alignItems: 'center' },
-    cancelBtnText: { color: c.textMuted, fontSize: 14 },
+    cancelBtnText: { ...typography.button, color: c.textMuted },
   });
 }

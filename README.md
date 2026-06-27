@@ -90,6 +90,17 @@ and install the resulting APK / TestFlight build on a **real device**
 
 ---
 
+## Documentation
+
+| Doc | Purpose |
+|---|---|
+| [docs/VERIFICATION.md](docs/VERIFICATION.md) | Per-rubric-item manual test checklist (foreground handler, Android channel, push token, deep link, stretch goals). |
+| [docs/DEMO.md](docs/DEMO.md) | Storyboard for the demo video + required screenshot list. |
+| [PLAN.md](PLAN.md) | Original implementation plan and architecture notes. |
+| [server/README.md](server/README.md) | Node push helper usage. |
+
+---
+
 ## Architecture
 
 ```
@@ -290,10 +301,14 @@ Notifications.addNotificationResponseReceivedListener((response) => {
 | 4 | Local + push tap → same handler → habit detail | ✅ |
 | 5 | Permission flow, denied state, open settings, foreground handler | ✅ |
 | 6 | High-importance Android channel before permission | ✅ |
-| 7 | Push register, token display, copy, deep-link payload | ✅ (needs dev build to verify on device) |
+| 7 | Push register, token display, copy, deep-link payload | ✅ (needs dev build to verify on device — see [VERIFICATION.md](docs/VERIFICATION.md)) |
 | 8 | No notifications in components, hooks clean, errors handled | ✅ |
 | 9 | Writeup answers | ✅ (above) |
-| 10 | Demo + submission | _pending screenshots/video_ |
+| 10 | Demo + submission | see [DEMO.md](docs/DEMO.md) storyboard |
+| Stretch | Snooze action button | ✅ |
+| Stretch | Done action button | ✅ |
+| Stretch | App badge count | ✅ |
+| Stretch | Quiet hours window | ✅ |
 
 ---
 
@@ -301,8 +316,7 @@ Notifications.addNotificationResponseReceivedListener((response) => {
 
 - Time picker uses simple numeric inputs (no `DateTimePicker`) to avoid an
   extra native dep — easy upgrade later.
-- Stretch goals not yet wired: snooze action, badge count, quiet hours,
-  image push, calendar heatmap.
+- Image push and calendar heatmap stretch goals not yet implemented.
 - The dev build itself must be produced with **your** EAS account; the
   scripts and config are in place but the artifact is not in this repo.
 

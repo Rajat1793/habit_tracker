@@ -39,6 +39,7 @@ import { HABIT_CHANNEL_ID } from '@/lib/notifications/setup';
 import { resetOnboarding } from '@/lib/onboarding/state';
 import type { NotificationDeepLink } from '@/lib/habits/types';
 import { useColors, useTheme, useThemedStyles, type ThemeMode } from '@/theme/theme-context';
+import { fonts, typography } from '@/theme/typography';
 import { SUPPORTED_LOCALES, useI18n, type LocalePref } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
@@ -442,7 +443,7 @@ export default function SettingsScreen() {
 function makeStyles(c: Palette) {
   return StyleSheet.create({
     container: { padding: 20, paddingBottom: 40 },
-    h1: { color: c.text, fontSize: 24, fontWeight: '700', marginBottom: 16 },
+    h1: { ...typography.pageTitle, color: c.text, marginBottom: 16 },
     card: {
       backgroundColor: c.card,
       borderRadius: 14,
@@ -450,11 +451,9 @@ function makeStyles(c: Palette) {
       marginBottom: 14,
     },
     cardLabel: {
+      ...typography.sectionLabel,
       color: c.textMuted,
-      fontSize: 12,
       marginBottom: 10,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
     },
     row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     rowBetween: {
@@ -463,7 +462,7 @@ function makeStyles(c: Palette) {
       justifyContent: 'space-between',
     },
     dot: { width: 10, height: 10, borderRadius: 5 },
-    miniLabel: { color: c.textMuted, fontSize: 11, marginBottom: 6 },
+    miniLabel: { ...typography.badge, color: c.textMuted, marginBottom: 6 },
     input: {
       backgroundColor: c.surface,
       color: c.text,
@@ -471,15 +470,15 @@ function makeStyles(c: Palette) {
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontSize: 16,
-      fontFamily: 'Courier',
+      fontFamily: fonts.mono,
     },
-    cardValue: { color: c.text, fontSize: 16, fontWeight: '600' },
-    helpText: { color: c.textMuted, fontSize: 13, lineHeight: 18, marginTop: 6 },
+    cardValue: { ...typography.bodySemiBold, color: c.text, fontSize: 16 },
+    helpText: { ...typography.meta, color: c.textMuted, marginTop: 6 },
     fineprint: { color: c.textFaint, fontSize: 11, lineHeight: 15, marginTop: 10 },
     tokenText: {
       color: c.text,
       fontSize: 12,
-      fontFamily: 'Courier',
+      fontFamily: fonts.mono,
       backgroundColor: c.surface,
       padding: 10,
       borderRadius: 8,
@@ -492,7 +491,7 @@ function makeStyles(c: Palette) {
       borderRadius: 12,
       alignItems: 'center',
     },
-    primaryBtnText: { color: c.accentText, fontWeight: '700' },
+    primaryBtnText: { ...typography.button, color: c.accentText },
     secondaryBtn: {
       marginTop: 10,
       backgroundColor: c.cardAlt,
@@ -500,10 +499,10 @@ function makeStyles(c: Palette) {
       borderRadius: 12,
       alignItems: 'center',
     },
-    secondaryBtnText: { color: c.text, fontWeight: '600' },
+    secondaryBtnText: { ...typography.button, color: c.text },
     btnDisabled: { opacity: 0.4 },
     linkBtn: { marginTop: 8, paddingVertical: 8, alignItems: 'center' },
-    linkBtnText: { color: c.textMuted, fontSize: 13 },
+    linkBtnText: { ...typography.meta, color: c.textMuted },
     segment: {
       flexDirection: 'row',
       backgroundColor: c.surface,
@@ -512,7 +511,7 @@ function makeStyles(c: Palette) {
     },
     segmentBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
     segmentBtnActive: { backgroundColor: c.accent },
-    segmentText: { color: c.textMuted, fontWeight: '600' },
+    segmentText: { ...typography.button, color: c.textMuted },
     segmentTextActive: { color: c.accentText },
   });
 }

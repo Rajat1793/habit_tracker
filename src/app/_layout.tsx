@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Text, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
 import { useNotificationRouter } from '@/hooks/use-notification-router';
 import { ensureNotificationCategory } from '@/lib/notifications/actions';
 import {
@@ -10,6 +12,7 @@ import {
 import { isOnboarded } from '@/lib/onboarding/state';
 import { initSentry } from '@/lib/observability/sentry';
 import { ThemeProvider, useTheme } from '@/theme/theme-context';
+import { fonts, getFontMap, typography } from '@/theme/typography';
 import { I18nProvider, useT } from '@/i18n';
 
 // Install the foreground handler at module load — before React even mounts.
@@ -19,6 +22,24 @@ installForegroundHandler();
 
 // Crash reporting init — no-op in dev or when DSN is absent.
 initSentry();
+
+// Apply Inter as the default font for every <Text> in the app exactly once.
+// `Text.defaultProps` is still the canonical way to set a global text style
+// in React Native — there's no global CSS equivalent. Wrapped in a guard so
+// repeated hot-reloads don't keep stacking the default style array.
+let defaultTextStyleApplied = false;
+function applyDefaultTextFont() {
+  if (defaultTextStyleApplied) return;
+  const TextAny = Text as unknown as {
+    defaultProps?: { style?: unknown };
+  };
+  TextAny.defaultProps = TextAny.defaultProps ?? {};
+  TextAny.defaultProps.style = [
+    { fontFamily: fonts.bodyRegular },
+    TextAny.defaultProps.style,
+  ];
+  defaultTextStyleApplied = true;
+}
 
 function ThemedStack() {
   const { colors, scheme } = useTheme();
@@ -30,7 +51,10 @@ function ThemedStack() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
           headerTintColor: colors.text,
-          headerTitleStyle: { fontWeight: '700' },
+          headerTitleStyle: {
+            fontFamily: fonts.headlineSemiBold,
+            fontSize: typography.headlineMd.fontSize,
+          },
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
@@ -77,6 +101,10 @@ function useFirstLaunchGuard() {
 }
 
 export default function RootLayout() {
+  // Load the Inter + Space Grotesk weights used by the typography system.
+  // Render nothing until they're ready so we never flash a system font.
+  const [fontsLoaded] = useFonts(getFontMap());
+
   // Channel + category must exist BEFORE the user is ever prompted for
   // permission on Android 13+. Both calls are idempotent — running them on
   // every cold start just updates the existing config.
@@ -89,6 +117,13 @@ export default function RootLayout() {
   // Also dispatches the Done / Snooze action buttons.
   useNotificationRouter();
   useFirstLaunchGuard();
+
+  if (!fontsLoaded) {
+    // Tiny placeholder; the splash screen is still up at this point.
+    return <View />;
+  }
+
+  applyDefaultTextFont();
 
   return (
     <ThemeProvider>

@@ -19,6 +19,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useT } from '@/i18n';
 import { useThemedStyles } from '@/theme/theme-context';
+import { typography } from '@/theme/typography';
 import type { Palette } from '@/theme/colors';
 import { markOnboarded } from '@/lib/onboarding/state';
 
@@ -118,7 +119,7 @@ function makeStyles(c: Palette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: c.bg, paddingTop: 60, paddingBottom: 32 },
     skipRow: { paddingHorizontal: 20, alignItems: 'flex-end' },
-    skipText: { color: c.textMuted, fontSize: 14, fontWeight: '600' },
+    skipText: { ...typography.button, color: c.textMuted },
     slide: {
       flex: 1,
       alignItems: 'center',
@@ -126,7 +127,7 @@ function makeStyles(c: Palette) {
       paddingHorizontal: 32,
     },
     emoji: { fontSize: 88, marginBottom: 32 },
-    title: { color: c.text, fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 16 },
+    title: { ...typography.pageTitle, color: c.text, textAlign: 'center', marginBottom: 16 },
     body: {
       color: c.textMuted,
       fontSize: 16,
@@ -144,6 +145,6 @@ function makeStyles(c: Palette) {
       borderRadius: 14,
       alignItems: 'center',
     },
-    ctaText: { color: c.accentText, fontSize: 16, fontWeight: '700' },
+    ctaText: { ...typography.buttonLg, color: c.accentText },
   });
 }

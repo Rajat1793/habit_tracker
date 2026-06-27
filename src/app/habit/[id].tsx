@@ -14,6 +14,7 @@ import { useHabit, useHabits } from '@/hooks/use-habits';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
 import { isWeekly, type Weekday } from '@/lib/habits/types';
 import { useThemedStyles } from '@/theme/theme-context';
+import { fonts, typography } from '@/theme/typography';
 import { useT } from '@/i18n';
 import type { Palette } from '@/theme/colors';
 
@@ -177,7 +178,7 @@ function makeStyles(c: Palette) {
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
     hero: { alignItems: 'center', marginBottom: 24, marginTop: 8 },
     emoji: { fontSize: 64, marginBottom: 8 },
-    name: { color: c.text, fontSize: 24, fontWeight: '700' },
+    name: { ...typography.pageTitle, color: c.text },
     streakChip: {
       marginTop: 12,
       backgroundColor: c.cardAlt,
@@ -185,17 +186,17 @@ function makeStyles(c: Palette) {
       paddingVertical: 6,
       borderRadius: 999,
     },
-    streakText: { color: c.streak, fontWeight: '600' },
+    streakText: { ...typography.badge, color: c.streak },
     card: {
       backgroundColor: c.card,
       borderRadius: 14,
       padding: 14,
       marginBottom: 12,
     },
-    cardLabel: { color: c.textMuted, fontSize: 12, marginBottom: 6, textTransform: 'uppercase' },
-    cardValue: { color: c.text, fontSize: 15 },
-    cardMono: { color: c.textMuted, fontSize: 12, fontFamily: 'Courier' },
-    h1: { color: c.text, fontSize: 20, fontWeight: '700', marginBottom: 8, textAlign: 'center' },
+    cardLabel: { ...typography.sectionLabel, color: c.textMuted, marginBottom: 6 },
+    cardValue: { ...typography.body, color: c.text, fontSize: 15 },
+    cardMono: { ...typography.mono, color: c.textMuted, fontFamily: fonts.mono },
+    h1: { ...typography.headlineMd, color: c.text, marginBottom: 8, textAlign: 'center' },
     muted: { color: c.textMuted, textAlign: 'center', marginBottom: 16 },
     primaryBtn: {
       marginTop: 12,
@@ -205,7 +206,7 @@ function makeStyles(c: Palette) {
       alignItems: 'center',
     },
     primaryBtnDone: { backgroundColor: c.cardAlt },
-    primaryBtnText: { color: c.accentText, fontWeight: '700', fontSize: 16 },
+    primaryBtnText: { ...typography.buttonLg, color: c.accentText },
     primaryBtnTextDone: { color: c.success },
     secondaryBtn: {
       marginTop: 10,
@@ -214,13 +215,13 @@ function makeStyles(c: Palette) {
       borderRadius: 12,
       alignItems: 'center',
     },
-    secondaryBtnText: { color: c.text, fontWeight: '600' },
+    secondaryBtnText: { ...typography.button, color: c.text },
     dangerBtn: {
       marginTop: 10,
       paddingVertical: 12,
       borderRadius: 12,
       alignItems: 'center',
     },
-    dangerBtnText: { color: c.danger, fontWeight: '600' },
+    dangerBtnText: { ...typography.button, color: c.danger },
   });
 }
