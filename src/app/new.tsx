@@ -7,7 +7,6 @@
  */
 import { useMemo, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -20,6 +19,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits, type HabitDraft } from '@/hooks/use-habits';
 import type { Frequency, Weekday } from '@/lib/habits/types';
+import { notify } from '@/lib/ui/alerts';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
 import { typography } from '@/theme/typography';
 import { useT } from '@/i18n';
@@ -51,7 +51,6 @@ export default function NewHabitScreen() {
   const styles = useThemedStyles(makeStyles);
 
   const [name, setName] = useState(editing?.name ?? '');
-  const [emoji, setEmoji] = useState(editing?.emoji ?? '💧');
   const [kind, setKind] = useState<Frequency['kind']>(editing?.frequency.kind ?? 'daily');
   const [hour, setHour] = useState(String(editing?.frequency.hour ?? 9));
   const [minute, setMinute] = useState(String(editing?.frequency.minute ?? 0));
@@ -69,9 +68,13 @@ export default function NewHabitScreen() {
     return { kind: 'weekly', weekdays, hour: h, minute: m };
   }, [kind, hour, minute, weekdays]);
 
+  // Emoji field was removed; the display code in list/detail already falls
+  // back to '✨' when the stored value is empty. Preserve the existing
+  // emoji on edit so we don't wipe it silently.
+  const emoji = editing?.emoji ?? '';
+
   const canSave =
     name.trim().length > 0 &&
-    emoji.trim().length > 0 &&
     (kind === 'daily' || weekdays.length > 0);
 
   const toggleWeekday = (w: Weekday) => {
@@ -92,7 +95,7 @@ export default function NewHabitScreen() {
       }
       router.back();
     } catch (err) {
-      Alert.alert(t('form.saveError'), err instanceof Error ? err.message : String(err));
+      notify(t('form.saveError'), err instanceof Error ? err.message : String(err));
     } finally {
       setSaving(false);
     }
@@ -116,15 +119,6 @@ export default function NewHabitScreen() {
           placeholderTextColor={colors.textFaint}
           style={styles.input}
           accessibilityLabel={t('form.name')}
-        />
-
-        <Text style={styles.label}>{t('form.emoji')}</Text>
-        <TextInput
-          value={emoji}
-          onChangeText={setEmoji}
-          maxLength={4}
-          style={[styles.input, styles.emojiInput]}
-          accessibilityLabel={t('form.emoji')}
         />
 
         <Text style={styles.label}>{t('form.frequency')}</Text>

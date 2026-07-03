@@ -12,7 +12,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -21,6 +20,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { confirmDestructive, notify } from '@/lib/ui/alerts';
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import * as Clipboard from 'expo-clipboard';
@@ -106,34 +106,38 @@ export default function SettingsScreen() {
   };
 
   const onImport = async () => {
-    const raw = await Clipboard.getStringAsync();
+    // Read the clipboard. Browsers may reject this (permission / no user
+    // gesture / tab not focused) — surface a friendly error instead of an
+    // unhandled rejection.
+    let raw = '';
+    try {
+      raw = await Clipboard.getStringAsync();
+    } catch (err) {
+      notify(t('settings.failed'), err instanceof Error ? err.message : String(err));
+      return;
+    }
     if (!raw.trim()) {
-      Alert.alert(t('settings.failed'), t('settings.backupEmpty'));
+      notify(t('settings.failed'), t('settings.backupEmpty'));
       return;
     }
     const parsed = parseBackup(raw);
     if (!parsed) {
-      Alert.alert(t('settings.failed'), t('settings.backupImportFail'));
+      notify(t('settings.failed'), t('settings.backupImportFail'));
       return;
     }
-    Alert.alert(
-      t('settings.backupImportConfirmTitle'),
-      t('settings.backupImportConfirmBody'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.save'),
-          style: 'destructive',
-          onPress: async () => {
-            await replaceAll(parsed.habits);
-            Alert.alert(
-              t('settings.backupImportConfirmTitle'),
-              t('settings.backupImportSuccess', { count: parsed.habits.length }),
-            );
-          },
-        },
-      ],
-    );
+    confirmDestructive({
+      title: t('settings.backupImportConfirmTitle'),
+      body: t('settings.backupImportConfirmBody'),
+      cancelLabel: t('common.cancel'),
+      confirmLabel: t('common.save'),
+      onConfirm: async () => {
+        await replaceAll(parsed.habits);
+        notify(
+          t('settings.backupImportConfirmTitle'),
+          t('settings.backupImportSuccess', { count: parsed.habits.length }),
+        );
+      },
+    });
   };
 
   const onResetOnboarding = async () => {
@@ -143,7 +147,7 @@ export default function SettingsScreen() {
 
   const onSendTest = async () => {
     if (!permission.granted) {
-      Alert.alert(t('settings.permissionNeeded'), t('settings.permissionNeededBody'));
+      notify(t('settings.permissionNeeded'), t('settings.permissionNeededBody'));
       return;
     }
     setTesting(true);
@@ -167,9 +171,9 @@ export default function SettingsScreen() {
           channelId: HABIT_CHANNEL_ID,
         },
       });
-      Alert.alert(t('settings.scheduling'), t('settings.scheduledMsg'));
+      notify(t('settings.scheduling'), t('settings.scheduledMsg'));
     } catch (err) {
-      Alert.alert(t('settings.failed'), err instanceof Error ? err.message : String(err));
+      notify(t('settings.failed'), err instanceof Error ? err.message : String(err));
     } finally {
       setTesting(false);
     }

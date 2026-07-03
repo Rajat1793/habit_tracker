@@ -56,7 +56,13 @@ export default function OnboardingScreen() {
       router.replace('/');
       return;
     }
-    listRef.current?.scrollToIndex({ index: page + 1, animated: true });
+    // `scrollToIndex` is flaky on react-native-web with a horizontal paged
+    // FlatList (it depends on layout measurement that hasn't settled yet).
+    // `scrollToOffset` uses a plain pixel offset and works everywhere.
+    listRef.current?.scrollToOffset({
+      offset: (page + 1) * width,
+      animated: true,
+    });
   };
 
   const onSkip = async () => {

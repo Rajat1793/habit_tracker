@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -14,6 +14,7 @@ import { initSentry } from '@/lib/observability/sentry';
 import { ThemeProvider, useTheme } from '@/theme/theme-context';
 import { fonts, getFontMap, typography } from '@/theme/typography';
 import { I18nProvider, useT } from '@/i18n';
+import { LoadingScreen } from '@/components/loading-screen';
 
 // Install the foreground handler at module load — before React even mounts.
 // This guarantees the handler is registered before any notification can
@@ -58,7 +59,7 @@ function ThemedStack() {
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Streaks' }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen
           name="new"
           options={{ title: t('form.titleNew'), presentation: 'modal' }}
@@ -119,8 +120,9 @@ export default function RootLayout() {
   useFirstLaunchGuard();
 
   if (!fontsLoaded) {
-    // Tiny placeholder; the splash screen is still up at this point.
-    return <View />;
+    // Themed splash bridging OS splash → JS init so users see a continuous
+    // brand frame instead of a blank surface.
+    return <LoadingScreen />;
   }
 
   applyDefaultTextFont();

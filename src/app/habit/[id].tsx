@@ -8,11 +8,12 @@
  * habit that was since deleted, we render a friendly not-found state with a
  * way back home rather than crashing.
  */
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits } from '@/hooks/use-habits';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
 import { isWeekly, type Weekday } from '@/lib/habits/types';
+import { confirmDestructive } from '@/lib/ui/alerts';
 import { useThemedStyles } from '@/theme/theme-context';
 import { fonts, typography } from '@/theme/typography';
 import { useT } from '@/i18n';
@@ -71,21 +72,16 @@ export default function HabitDetailScreen() {
   const time = fmtTime(habit.frequency.hour, habit.frequency.minute);
 
   const onDelete = () => {
-    Alert.alert(
-      t('detail.deleteConfirmTitle'),
-      t('detail.deleteConfirmBody', { name: habit.name }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            await deleteHabit(habit.id);
-            router.replace('/');
-          },
-        },
-      ],
-    );
+    confirmDestructive({
+      title: t('detail.deleteConfirmTitle'),
+      body: t('detail.deleteConfirmBody', { name: habit.name }),
+      cancelLabel: t('common.cancel'),
+      confirmLabel: t('common.delete'),
+      onConfirm: async () => {
+        await deleteHabit(habit.id);
+        router.replace('/');
+      },
+    });
   };
 
   return (
@@ -94,7 +90,7 @@ export default function HabitDetailScreen() {
 
       <View style={styles.hero}>
         <Text style={styles.emoji} accessibilityElementsHidden importantForAccessibility="no">
-          {habit.emoji}
+          {habit.emoji || '✨'}
         </Text>
         <Text style={styles.name} accessibilityRole="header">
           {habit.name}
