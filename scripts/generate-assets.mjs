@@ -2,15 +2,19 @@
 /**
  * Generate app icon / adaptive icon / splash / favicon PNGs from pure code.
  *
- * We can't ship a real design tool, but pngjs is already installed as a
- * transitive dep, so we build the images pixel-by-pixel from an SDF-ish
- * flame silhouette. Runs offline with zero extra dependencies.
+ * pngjs is already installed as a transitive dep, so we build the images
+ * pixel-by-pixel from an SDF mascot silhouette. Runs offline with zero extra
+ * dependencies.
+ *
+ * Brand: a friendly rounded-triangle character ("the sprout") with a simple
+ * smiley face — the app's logo. Leaf-green body on a warm cream field.
  *
  * Palette (mirrors src/theme/colors.ts):
- *   ink    = #0F1115  (splash / icon background)
- *   coral  = #E94B35  (flame body)
- *   peach  = #FFEBCC  (highlight)
- *   cream  = #F7F6F2  (adaptive icon fallback tint)
+ *   cream     = #F1F0E4  (icon / splash background, light)
+ *   inkGreen  = #0E1A12  (dark splash background)
+ *   moss      = #4FA857  (mascot body)
+ *   mossLight = #69C071  (top sheen)
+ *   face      = #14281A  (eyes + smile)
  *
  * Outputs land in assets/ at the repo root — referenced by app.json.
  *
@@ -28,66 +32,67 @@ const OUT_DIR = join(REPO_ROOT, 'assets');
 mkdirSync(OUT_DIR, { recursive: true });
 
 // ─── palette ────────────────────────────────────────────────────────────────
-const INK = [0x0f, 0x11, 0x15, 0xff];
-const CORAL = [0xe9, 0x4b, 0x35, 0xff];
-const CORAL_DEEP = [0xc2, 0x38, 0x25, 0xff];
-const PEACH = [0xff, 0xeb, 0xcc, 0xff];
-const CREAM = [0xf7, 0xf6, 0xf2, 0xff];
+const CREAM = [0xf1, 0xf0, 0xe4, 0xff];
+const MOSS = [0x4f, 0xa8, 0x57, 0xff];
+const MOSS_LIGHT = [0x69, 0xc0, 0x71, 0xff];
+const FACE = [0x14, 0x28, 0x1a, 0xff];
+const GREEN_BRIGHT = [0x5f, 0xbe, 0x68]; // landing accent (matches onboarding)
 const TRANSPARENT = [0, 0, 0, 0];
 
 // ─── shape helpers ──────────────────────────────────────────────────────────
 
 /**
- * "Insideness" for the flame silhouette in normalized coords.
- *   (u, v) both in roughly [-1, 1], v points UP (image y is flipped in caller).
- * Returns > 0 inside, ≤ 0 outside. Value approximates a signed distance in
- * normalized units so the caller can anti-alias by scaling by pixels/unit.
- *
- * Silhouette: single smooth "half-width" profile that bulges at the base
- * and tapers to a point at the top — the classic flame teardrop. One
- * function → no visible seams / lumps between primitives.
+ * Signed distance to an equilateral triangle (Inigo Quilez), apex pointing
+ * DOWN in the passed coords. Callers negate `v` so it points UP on screen.
+ * Negative inside, positive outside; `r` sets the size.
  */
-const V_BOTTOM = -0.70;
-const V_TOP = 0.90;
-const T_PEAK = 0.30; // widest point sits low in the flame → fat-bottom stance
-const W_MAX = 0.44;  // half-width at the peak (normalized units)
-
-function halfWidth(v) {
-  if (v <= V_BOTTOM || v >= V_TOP) return 0;
-  const t = (v - V_BOTTOM) / (V_TOP - V_BOTTOM); // 0 bottom → 1 top
-
-  if (t <= T_PEAK) {
-    // Bottom arc: upper half of an ellipse centered at t = T_PEAK, height
-    // T_PEAK. sqrt(1 - k²) gives a smooth rounded dome that reaches W_MAX
-    // exactly at t = T_PEAK with zero slope (matches the taper above).
-    const k = (t - T_PEAK) / T_PEAK; // -1 → 0
-    return W_MAX * Math.sqrt(Math.max(0, 1 - k * k));
+function sdEqTriangle(px, py, r) {
+  const k = Math.sqrt(3);
+  let x = Math.abs(px) - r;
+  let y = py + r / k;
+  if (x + k * y > 0) {
+    const nx = (x - k * y) / 2;
+    const ny = (-k * x - y) / 2;
+    x = nx;
+    y = ny;
   }
-  // Top taper: (1 - s^1.3)^0.7 has zero slope at the peak (smooth shoulder)
-  // and infinite slope at s = 1 (sharp flame tip). One unified curve → no
-  // visible seams between the base and the taper.
-  const s = (t - T_PEAK) / (1 - T_PEAK); // 0 → 1
-  return W_MAX * Math.pow(Math.max(0, 1 - Math.pow(s, 1.3)), 0.7);
+  x -= Math.min(Math.max(x, -2 * r), 0);
+  return -Math.hypot(x, y) * Math.sign(y);
 }
 
-function flameField(u, v) {
-  const w = halfWidth(v);
-  if (w <= 0) return -1;
-  // Signed distance to the vertical band |u| ≤ w. Positive inside.
-  return w - Math.abs(u);
+// Mascot geometry in normalized coords (u,v ∈ ~[-1,1], v points UP).
+const TRI_R = 0.66; // triangle size
+const TRI_ROUND = 0.17; // corner-rounding radius (bigger = softer, chunkier)
+
+/** Rounded-triangle insideness in *normalized* units (>0 inside). */
+function bodyField(u, v) {
+  // Apex points UP; sit the shape slightly high so the wide base leaves
+  // room for the face.
+  const d = sdEqTriangle(u, v - 0.02, TRI_R);
+  return TRI_ROUND - d; // >0 inside the rounded triangle
 }
 
-/**
- * Inner "core" glow — a small warm oval that sits near the base of the
- * flame. Reads as candle-glow depth, not a competing shape.
- */
-function highlightField(u, v) {
-  const cx = 0.0;
-  const cy = V_BOTTOM + (V_TOP - V_BOTTOM) * (T_PEAK - 0.05); // just below peak
-  const rx = 0.14;
-  const ry = 0.24;
-  const d = 1 - ((u - cx) * (u - cx)) / (rx * rx) - ((v - cy) * (v - cy)) / (ry * ry);
-  return d * Math.min(rx, ry); // approximate distance
+// Face features, positioned in the wide lower half of the triangle.
+const EYE_X = 0.16;
+const EYE_Y = 0.05; // eyes sit a touch higher
+const EYE_RX = 0.05;
+const EYE_RY = 0.07;
+const SMILE_CY = -0.05; // circle center (arc curves below it → happy "U")
+const SMILE_R = 0.19;
+const SMILE_STROKE = 0.03;
+
+/** Elliptical eye insideness in normalized units (>0 inside). */
+function eyeField(u, v, ex) {
+  const dist = Math.hypot((u - ex) / EYE_RX, (v - EYE_Y) / EYE_RY);
+  return (1 - dist) * EYE_RX; // approx signed distance
+}
+
+/** Smile-stroke insideness in normalized units (>0 on the stroke). */
+function smileField(u, v) {
+  const dy = SMILE_CY - v; // positive below the center
+  if (dy < 0.02) return -1; // only the lower arc → open-top "U"
+  const dist = Math.hypot(u, v - SMILE_CY);
+  return SMILE_STROKE - Math.abs(dist - SMILE_R);
 }
 
 // ─── blitting ───────────────────────────────────────────────────────────────
@@ -96,78 +101,78 @@ function highlightField(u, v) {
  * @param {number} size  square canvas side in px
  * @param {number[]} bg  RGBA background; use [0,0,0,0] for transparent
  * @param {object} opts
- *   opts.scale      — flame radius as fraction of half-canvas (default 0.72)
- *   opts.center     — [cx, cy] normalized ∈ [0,1] (default [0.5, 0.55])
- *   opts.coral      — main coral RGBA
- *   opts.highlight  — inner highlight RGBA
- *   opts.padCorners — if true, mask output to a rounded-square (for icon)
+ *   opts.scale   — mascot radius as fraction of half-canvas (default 0.72)
+ *   opts.center  — [cx, cy] normalized ∈ [0,1] (default [0.5, 0.52])
+ *   opts.body    — body RGBA (default moss)
+ *   opts.face    — draw the smiley face (default true)
  */
-function renderFlame(size, bg, opts = {}) {
+function renderMascot(size, bg, opts = {}) {
   const png = new PNG({ width: size, height: size, filterType: -1 });
   const scale = opts.scale ?? 0.72;
-  const center = opts.center ?? [0.5, 0.55];
-  const coral = opts.coral ?? CORAL;
-  const coralDeep = opts.coralDeep ?? CORAL_DEEP;
-  const highlight = opts.highlight ?? PEACH;
+  const center = opts.center ?? [0.5, 0.52];
+  const body = opts.body ?? MOSS;
+  const drawFace = opts.face ?? true;
 
   const cx = size * center[0];
   const cy = size * center[1];
   const R = (size / 2) * scale;
-
-  // Corner-rounding for icon: iOS auto-masks; Android may not. Keep a
-  // subtle radius so an unrendered raw icon still looks intentional.
-  const corner = opts.padCorners ? size * 0.22 : 0;
-
   const buf = png.data;
+
+  // ~1.5px anti-aliasing softness, expressed in normalized units.
+  const aa = 1.5 / R;
 
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const idx = (y * size + x) * 4;
-
-      // Start from the background.
       let r = bg[0], g = bg[1], b = bg[2], a = bg[3];
 
-      // Optional rounded-square mask (works for opaque bg).
-      if (corner > 0) {
-        const dx = Math.max(corner - x, 0, x - (size - corner - 1));
-        const dy = Math.max(corner - y, 0, y - (size - corner - 1));
-        if (dx > 0 && dy > 0) {
-          const d = Math.hypot(dx, dy);
-          if (d > corner) {
-            // Fully outside the rounded corner — force transparent.
-            buf[idx] = 0; buf[idx + 1] = 0; buf[idx + 2] = 0; buf[idx + 3] = 0;
-            continue;
-          }
-        }
-      }
-
-      // Convert pixel to normalized flame coords (v flipped so +v is up).
       const u = (x - cx) / R;
-      const v = (cy - y) / R;
+      const v = (cy - y) / R; // v up
 
-      // Anti-aliasing: field value already in normalized units, so multiply
-      // by pixels-per-unit to get a soft signed distance in pixels.
-      const perUnit = R;
-      const flameSoft = flameField(u, v) * perUnit;
-      if (flameSoft > -1.2) {
-        // Solid coral silhouette. No outline lip — flat brand mark reads
-        // cleaner than a chunky border at small sizes (favicon).
-        const edgeAlpha = clamp01(0.5 + flameSoft / 2.4);
+      const bodyIn = bodyField(u, v);
+      if (bodyIn > -aa) {
+        // Solid moss body.
+        const bodyA = clamp01(0.5 + bodyIn / aa);
         [r, g, b, a] = compose(
           [r, g, b, a],
-          [coral[0], coral[1], coral[2], Math.round(edgeAlpha * 255)],
+          [body[0], body[1], body[2], Math.round(bodyA * 255)],
         );
 
-        // Very soft interior highlight — a small warm oval near the base
-        // that reads as a candle-glow. Capped at 14% opacity so it stays
-        // as depth cue, never a competing shape.
-        const hlSoft = highlightField(u, v) * perUnit;
-        if (hlSoft > -1.2) {
-          const hlA = clamp01(0.5 + hlSoft / 2.4) * 0.14;
+        // Soft top sheen — a lighter green wash in the upper third for depth.
+        if (v > 0.05) {
+          const sheen = clamp01((v - 0.05) / 0.6) * 0.16;
           [r, g, b, a] = compose(
             [r, g, b, a],
-            [highlight[0], highlight[1], highlight[2], Math.round(hlA * 255)],
+            [
+              MOSS_LIGHT[0],
+              MOSS_LIGHT[1],
+              MOSS_LIGHT[2],
+              Math.round(sheen * 255 * bodyA),
+            ],
           );
+        }
+
+        if (drawFace) {
+          // Eyes.
+          const eL = eyeField(u, v, -EYE_X);
+          const eR = eyeField(u, v, EYE_X);
+          const eyeIn = Math.max(eL, eR);
+          if (eyeIn > -aa) {
+            const eyeA = clamp01(0.5 + eyeIn / aa);
+            [r, g, b, a] = compose(
+              [r, g, b, a],
+              [FACE[0], FACE[1], FACE[2], Math.round(eyeA * 255)],
+            );
+          }
+          // Smile.
+          const sIn = smileField(u, v);
+          if (sIn > -aa) {
+            const sA = clamp01(0.5 + sIn / aa);
+            [r, g, b, a] = compose(
+              [r, g, b, a],
+              [FACE[0], FACE[1], FACE[2], Math.round(sA * 255)],
+            );
+          }
         }
       }
 
@@ -197,6 +202,143 @@ function compose(dst, src) {
   return [Math.round(r), Math.round(g), Math.round(b), Math.round(outA * 255)];
 }
 
+// ─── landing hero: blob mascot + wavy squiggle ───────────────────────────────
+
+/** Distance from point (px,py) to segment (ax,ay)-(bx,by). */
+function sdSegment(px, py, ax, ay, bx, by) {
+  const pax = px - ax;
+  const pay = py - ay;
+  const bax = bx - ax;
+  const bay = by - ay;
+  const h = clamp01((pax * bax + pay * bay) / (bax * bax + bay * bay));
+  return Math.hypot(pax - bax * h, pay - bay * h);
+}
+
+// Blob = a fat capsule ("head + trailing body") with a smiley on the head.
+const BLOB_A = [-0.12, 0.08]; // head center — the face lives here
+const BLOB_B = [0.82, -0.34]; // tail — runs off toward the bottom-right
+const BLOB_R = 0.52;
+const BEYE_X = 0.13;
+const BEYE_RX = 0.055;
+const BEYE_RY = 0.078;
+const BSMILE_R = 0.17;
+const BSMILE_STROKE = 0.03;
+
+function renderBlob(size) {
+  const png = new PNG({ width: size, height: size, filterType: -1 });
+  const buf = png.data;
+  const R = size / 2;
+  const aa = 1.5 / R;
+  const c = size / 2;
+  const fx = BLOB_A[0];
+  const fy = BLOB_A[1];
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const idx = (y * size + x) * 4;
+      let r = 0, g = 0, b = 0, a = 0;
+      const u = (x - c) / R;
+      const v = (c - y) / R;
+
+      const bodyIn =
+        BLOB_R - sdSegment(u, v, BLOB_A[0], BLOB_A[1], BLOB_B[0], BLOB_B[1]);
+      if (bodyIn > -aa) {
+        const bodyA = clamp01(0.5 + bodyIn / aa);
+        [r, g, b, a] = compose(
+          [r, g, b, a],
+          [MOSS[0], MOSS[1], MOSS[2], Math.round(bodyA * 255)],
+        );
+
+        // Soft top sheen for depth.
+        if (v > -0.1) {
+          const sheen = clamp01((v + 0.1) / 0.7) * 0.14;
+          [r, g, b, a] = compose(
+            [r, g, b, a],
+            [
+              MOSS_LIGHT[0],
+              MOSS_LIGHT[1],
+              MOSS_LIGHT[2],
+              Math.round(sheen * 255 * bodyA),
+            ],
+          );
+        }
+
+        // Eyes.
+        const eyeY = fy + 0.03; // lift the eyes for a clear gap to the smile
+        const eL =
+          (1 - Math.hypot((u - (fx - BEYE_X)) / BEYE_RX, (v - eyeY) / BEYE_RY)) *
+          BEYE_RX;
+        const eR =
+          (1 - Math.hypot((u - (fx + BEYE_X)) / BEYE_RX, (v - eyeY) / BEYE_RY)) *
+          BEYE_RX;
+        const eyeIn = Math.max(eL, eR);
+        if (eyeIn > -aa) {
+          const eyeA = clamp01(0.5 + eyeIn / aa);
+          [r, g, b, a] = compose(
+            [r, g, b, a],
+            [FACE[0], FACE[1], FACE[2], Math.round(eyeA * 255)],
+          );
+        }
+
+        // Smile — lower arc of a circle centered well below the eyes.
+        const scy = fy - 0.1;
+        if (scy - v > 0.02) {
+          const sd =
+            BSMILE_STROKE - Math.abs(Math.hypot(u - fx, v - scy) - BSMILE_R);
+          if (sd > -aa) {
+            const sA = clamp01(0.5 + sd / aa);
+            [r, g, b, a] = compose(
+              [r, g, b, a],
+              [FACE[0], FACE[1], FACE[2], Math.round(sA * 255)],
+            );
+          }
+        }
+      }
+
+      buf[idx] = r;
+      buf[idx + 1] = g;
+      buf[idx + 2] = b;
+      buf[idx + 3] = a;
+    }
+  }
+  return PNG.sync.write(png);
+}
+
+/** Hand-drawn-ish green wavy underline on a transparent field. */
+function renderSquiggle(w, h) {
+  const png = new PNG({ width: w, height: h, filterType: -1 });
+  const buf = png.data;
+  const mid = h / 2;
+  const amp = h * 0.26;
+  const cycles = 2.75;
+  const thick = Math.max(2.2, h * 0.11);
+  const k = (cycles * 2 * Math.PI) / (w - 1);
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
+      const targetY = mid - amp * Math.sin(x * k);
+      // Perpendicular distance keeps the stroke an even width on the slopes.
+      const slope = -amp * Math.cos(x * k) * k;
+      const perp = Math.abs(y - targetY) / Math.sqrt(1 + slope * slope);
+      let alpha = clamp01((thick - perp) / 1.5 + 0.5);
+      // Taper the ends like a pen lift.
+      const edge = Math.min(x, w - 1 - x);
+      const pad = thick + 2;
+      if (edge < pad) alpha *= clamp01(edge / pad);
+      if (alpha <= 0) {
+        buf[idx + 3] = 0;
+        continue;
+      }
+      buf[idx] = GREEN_BRIGHT[0];
+      buf[idx + 1] = GREEN_BRIGHT[1];
+      buf[idx + 2] = GREEN_BRIGHT[2];
+      buf[idx + 3] = Math.round(alpha * 255);
+    }
+  }
+  return PNG.sync.write(png);
+}
+
 // ─── asset variants ─────────────────────────────────────────────────────────
 
 function writePng(name, bytes) {
@@ -207,35 +349,39 @@ function writePng(name, bytes) {
 
 console.log('Generating assets → assets/');
 
-// iOS + fallback icon: full-bleed ink, coral flame.
+// iOS + fallback icon: full-bleed cream, green mascot.
 writePng(
   'icon.png',
-  renderFlame(1024, INK, { scale: 0.68, center: [0.5, 0.56], padCorners: false }),
+  renderMascot(1024, CREAM, { scale: 0.74, center: [0.5, 0.52] }),
 );
 
-// Android adaptive-icon foreground: transparent bg, flame at ~50% of canvas
-// so it fits inside the platform's inner 66% safe zone.
+// Android adaptive-icon foreground: transparent bg, mascot at ~54% so it fits
+// inside the platform's inner 66% safe zone.
 writePng(
   'adaptive-icon.png',
-  renderFlame(1024, TRANSPARENT, { scale: 0.50, center: [0.5, 0.55] }),
+  renderMascot(1024, TRANSPARENT, { scale: 0.54, center: [0.5, 0.52] }),
 );
 
-// Splash: dark ink background, flame at ~28% of canvas centered.
+// Splash: cream background, mascot centered.
 writePng(
   'splash.png',
-  renderFlame(2048, INK, { scale: 0.28, center: [0.5, 0.50] }),
+  renderMascot(2048, CREAM, { scale: 0.3, center: [0.5, 0.5] }),
 );
 
-// Favicon (web): 48px, chunky flame on ink.
+// Favicon (web): 48px chunky mascot on cream.
 writePng(
   'favicon.png',
-  renderFlame(48, INK, { scale: 0.78, center: [0.5, 0.56] }),
+  renderMascot(48, CREAM, { scale: 0.86, center: [0.5, 0.52] }),
 );
 
 // Big square social/preview asset (nice-to-have; safe to ignore).
 writePng(
   'icon-social.png',
-  renderFlame(1200, INK, { scale: 0.42, center: [0.5, 0.52] }),
+  renderMascot(1200, CREAM, { scale: 0.46, center: [0.5, 0.5] }),
 );
+
+// Landing hero: blob character + wavy underline (transparent).
+writePng('mascot-blob.png', renderBlob(1024));
+writePng('squiggle.png', renderSquiggle(280, 64));
 
 console.log('Done.');

@@ -69,7 +69,8 @@ export async function snoozeHabit(
       title: `${habit.emoji} ${habit.name} (snoozed ${minutes}m)`,
       body: 'Tap to log it.',
       data,
-      sound: 'default',
+      // `true` = system default sound (a string = custom bundled filename).
+      sound: true,
       categoryIdentifier: HABIT_CATEGORY_ID,
     },
     trigger: {

@@ -1,18 +1,16 @@
 /**
  * Home (a.k.a. "Today") — landing screen.
  *
- * Structure:
- *   1. Brand row     — flame + "Streaks" wordmark, Settings link, + New CTA.
- *   2. Hero card     — time-of-day greeting, today's date, animated progress
- *                       bar keyed on today's due-vs-done ratio.
- *   3. Stats strip   — three chips: best streak / tracked / done today.
- *   4. Section label — "TODAY" (only shown when there ARE items to list).
- *   5. Habit list    — one row per due-today habit.
- *   6. Empty states  — either "no habits" (prominent CTA) or "nothing due".
+ * Reworked toward the friendly "Streaks"-style habit tracker:
+ *   1. Brand row     — mascot + "Streaks" wordmark, Settings, + New.
+ *   2. Greeting hero — time-of-day greeting, today's date, progress bar.
+ *   3. Week strip    — current Mon–Sun week, today in an accent pill.
+ *   4. Tip bubble    — a contextual speech-bubble nudge.
+ *   5. Habit list    — status rows (To do / Done) with a quick check toggle.
+ *   6. Empty states  — mascot + copy + CTA.
  *
- * The confetti + a11y announcement kick when the LAST pending habit for the
- * day flips to done. That behavior + the store hooks are unchanged from the
- * previous implementation; this file was reshaped for hierarchy + polish.
+ * Confetti + a11y announcement fire when the LAST pending habit for the day
+ * flips to done. Store hooks + selectors are unchanged from before.
  */
 import { useEffect, useMemo, useRef } from 'react';
 import {
@@ -24,7 +22,6 @@ import {
   StyleSheet,
   Text,
   View,
-  useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
@@ -39,7 +36,7 @@ import { LoadingScreen } from '@/components/loading-screen';
 import type { Palette } from '@/theme/colors';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const FLAME_ASSET = require('../../assets/adaptive-icon.png');
+const MASCOT_ASSET = require('../../assets/adaptive-icon.png');
 
 function fmtTime(h: number, m: number) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
@@ -53,13 +50,32 @@ function greetingKey(hour: number): 'morning' | 'afternoon' | 'evening' | 'night
   return 'night';
 }
 
+/** The 7 dates of the current week, starting Monday. */
+function currentWeek(now: Date): Date[] {
+  const mondayOffset = (now.getDay() + 6) % 7; // 0 = Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - mondayOffset);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+}
+
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export default function HomeScreen() {
   const { habits, status, markDoneToday } = useHabits();
   const router = useRouter();
   const t = useT();
   const { locale } = useI18n();
   const styles = useThemedStyles(makeStyles);
-  const { width } = useWindowDimensions();
 
   const todays = useMemo(() => habits.filter((h) => isDueToday(h)), [habits]);
   const doneCount = useMemo(
@@ -68,15 +84,7 @@ export default function HomeScreen() {
   );
   const pending = todays.length - doneCount;
 
-  // Best streak across ALL habits (not just today's), display-adjusted for
-  // "should this still count?" (getDisplayStreak returns 0 if too stale).
-  const bestStreak = useMemo(
-    () => habits.reduce((max, h) => Math.max(max, getDisplayStreak(h)), 0),
-    [habits],
-  );
-
-  // Progress bar fill — animate on mount + when count changes so the bar
-  // "grows" into place instead of snapping.
+  // Progress bar fill — animate on mount + when count changes.
   const fillProgress = todays.length === 0 ? 1 : doneCount / todays.length;
   const fillAnim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -88,7 +96,6 @@ export default function HomeScreen() {
   }, [fillProgress, fillAnim]);
 
   // Fire confetti the moment the last pending habit becomes done.
-  // Skip the case where the user simply never had anything due.
   const confettiRef = useRef<ConfettiHandle>(null);
   const prevPendingRef = useRef<number | null>(null);
   useEffect(() => {
@@ -111,6 +118,9 @@ export default function HomeScreen() {
     day: 'numeric',
   }).format(now);
 
+  const week = currentWeek(now);
+  const dowFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+
   const progressCaption =
     todays.length === 0
       ? t('home.progressNoneDue')
@@ -118,12 +128,18 @@ export default function HomeScreen() {
         ? t('home.progressAllDone')
         : t('home.progressDone', { done: doneCount, total: todays.length });
 
+  // Contextual tip for the speech bubble.
+  const tipText =
+    todays.length > 0 && pending === 0
+      ? t('home.tip.allDone')
+      : doneCount > 0
+        ? t('home.tip.progress')
+        : t('home.tip.start');
+
   const barWidth = fillAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
-
-  const isWide = width >= 720;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
@@ -147,8 +163,8 @@ export default function HomeScreen() {
         <View style={styles.brandRow}>
           <View style={styles.brandLeft}>
             <Image
-              source={FLAME_ASSET}
-              style={styles.brandFlame}
+              source={MASCOT_ASSET}
+              style={styles.brandMascot}
               resizeMode="contain"
               accessibilityIgnoresInvertColors
             />
@@ -178,8 +194,8 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Hero card ─────────────────────────────────────────────── */}
-        <View style={[styles.hero, isWide && styles.heroWide]}>
+        {/* ── Greeting hero ─────────────────────────────────────────── */}
+        <View style={styles.hero}>
           <Text style={styles.heroGreeting}>{greetLabel}</Text>
           <Text style={styles.heroDate}>{dateLabel}</Text>
 
@@ -196,36 +212,45 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* ── Stats strip ───────────────────────────────────────────── */}
+        {/* ── Week strip ────────────────────────────────────────────── */}
+        <View style={styles.week} accessibilityLabel={t('home.thisWeek')}>
+          {week.map((d) => {
+            const today = isSameDay(d, now);
+            const dow = dowFmt.format(d).slice(0, 2);
+            return (
+              <View key={d.toISOString()} style={styles.weekCell}>
+                <Text style={styles.weekDow}>{dow}</Text>
+                <View style={[styles.weekNum, today && styles.weekNumToday]}>
+                  <Text
+                    style={[styles.weekNumText, today && styles.weekNumTextToday]}
+                  >
+                    {d.getDate()}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+
+        {/* ── Tip speech bubble ─────────────────────────────────────── */}
         {habits.length > 0 && (
-          <View style={styles.stats}>
-            <StatChip
-              styles={styles}
-              label={t('home.stats.bestStreak')}
-              value={
-                bestStreak > 0
-                  ? `🔥 ${t('home.stats.days', { count: bestStreak })}`
-                  : '—'
-              }
-              accent
-            />
-            <StatChip
-              styles={styles}
-              label={t('home.stats.tracked')}
-              value={String(habits.length)}
-            />
-            <StatChip
-              styles={styles}
-              label={t('home.stats.doneToday')}
-              value={`${doneCount} / ${todays.length}`}
-            />
+          <View style={styles.tip}>
+            <View style={styles.tipBadge}>
+              <Text style={styles.tipBadgeText}>{t('home.tip.badge')}</Text>
+            </View>
+            <Text style={styles.tipText}>{tipText}</Text>
           </View>
         )}
 
         {/* ── Body: list or empty state ─────────────────────────────── */}
         {habits.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>✨</Text>
+            <Image
+              source={MASCOT_ASSET}
+              style={styles.emptyMascot}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
             <Text style={styles.emptyTitle}>{t('home.empty.noHabitsTitle')}</Text>
             <Text style={styles.emptyBody}>{t('home.empty.noHabitsBody')}</Text>
             <Link href="/new" asChild>
@@ -242,7 +267,12 @@ export default function HomeScreen() {
           </View>
         ) : todays.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyEmoji}>🌱</Text>
+            <Image
+              source={MASCOT_ASSET}
+              style={styles.emptyMascot}
+              resizeMode="contain"
+              accessibilityIgnoresInvertColors
+            />
             <Text style={styles.emptyTitle}>
               {t('home.empty.nothingDueTitle')}
             </Text>
@@ -260,10 +290,11 @@ export default function HomeScreen() {
               renderItem={({ item }) => {
                 const done = isDoneToday(item);
                 const streak = getDisplayStreak(item);
-                const time = fmtTime(
-                  item.frequency.hour,
-                  item.frequency.minute,
-                );
+                const time = fmtTime(item.frequency.hour, item.frequency.minute);
+                const freq =
+                  item.frequency.kind === 'daily'
+                    ? t('home.daily')
+                    : t('home.weekly');
                 return (
                   <View style={[styles.row, done && styles.rowDone]}>
                     <Pressable
@@ -284,41 +315,43 @@ export default function HomeScreen() {
                         >
                           {item.name}
                         </Text>
-                        <Text style={styles.meta}>
-                          {item.frequency.kind === 'daily'
-                            ? t('home.daily')
-                            : t('home.weekly')}
-                          {' · '}
-                          {time}
-                        </Text>
+                        <View style={styles.metaRow}>
+                          <Text
+                            style={[
+                              styles.statusPill,
+                              done ? styles.statusDone : styles.statusTodo,
+                            ]}
+                          >
+                            {done ? t('home.statusDone') : t('home.statusTodo')}
+                          </Text>
+                          <Text style={styles.meta}>
+                            {' · '}
+                            {freq} · {time}
+                          </Text>
+                        </View>
                       </View>
+                    </Pressable>
+
+                    {streak > 0 && (
                       <View style={styles.streakChip}>
                         <Text style={styles.streakText}>
                           {t('home.streak', { count: streak })}
                         </Text>
                       </View>
-                    </Pressable>
+                    )}
+
                     <Pressable
-                      style={[styles.doneBtn, done && styles.doneBtnDone]}
+                      style={[styles.check, done && styles.checkDone]}
                       onPress={() => markDoneToday(item.id)}
                       disabled={done}
                       accessibilityRole="button"
-                      accessibilityState={{ disabled: done }}
+                      accessibilityState={{ disabled: done, checked: done }}
                       accessibilityLabel={
                         done ? t('home.done') : t('home.markDone')
                       }
-                      accessibilityHint={
-                        done ? undefined : t('a11y.hintMarkDone')
-                      }
+                      accessibilityHint={done ? undefined : t('a11y.hintMarkDone')}
                     >
-                      <Text
-                        style={[
-                          styles.doneBtnText,
-                          done && styles.doneBtnTextDone,
-                        ]}
-                      >
-                        {done ? t('home.done') : t('home.markDone')}
-                      </Text>
+                      {done && <Text style={styles.checkMark}>✓</Text>}
                     </Pressable>
                   </View>
                 );
@@ -328,26 +361,6 @@ export default function HomeScreen() {
         )}
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-// ─── stat chip ───────────────────────────────────────────────────────────────
-
-type StatChipProps = {
-  styles: ReturnType<typeof makeStyles>;
-  label: string;
-  value: string;
-  accent?: boolean;
-};
-
-function StatChip({ styles, label, value, accent }: StatChipProps) {
-  return (
-    <View style={[styles.statChip, accent && styles.statChipAccent]}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, accent && styles.statValueAccent]}>
-        {value}
-      </Text>
-    </View>
   );
 }
 
@@ -374,8 +387,8 @@ function makeStyles(c: Palette) {
       justifyContent: 'space-between',
       marginBottom: 20,
     },
-    brandLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    brandFlame: { width: 28, height: 28 },
+    brandLeft: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+    brandMascot: { width: 30, height: 30 },
     wordmark: {
       fontFamily: fonts.headlineBold,
       fontSize: 22,
@@ -392,21 +405,16 @@ function makeStyles(c: Palette) {
     },
     addBtnText: { ...typography.button, color: c.accentText },
 
-    // Hero
+    // Greeting hero
     hero: {
       backgroundColor: c.card,
-      borderRadius: 20,
+      borderRadius: 22,
       padding: 20,
       borderWidth: 1,
       borderColor: c.border,
       marginBottom: 14,
     },
-    heroWide: { padding: 28 },
-    heroGreeting: {
-      ...typography.pageTitle,
-      color: c.text,
-      marginBottom: 2,
-    },
+    heroGreeting: { ...typography.pageTitle, color: c.text, marginBottom: 2 },
     heroDate: {
       ...typography.body,
       color: c.textMuted,
@@ -431,40 +439,63 @@ function makeStyles(c: Palette) {
       marginTop: 10,
     },
     progressCaption: { ...typography.bodyMedium, color: c.text, flex: 1 },
-    progressPct: {
-      ...typography.headlineSm,
-      color: c.tertiary,
-      marginLeft: 8,
-    },
+    progressPct: { ...typography.headlineSm, color: c.tertiary, marginLeft: 8 },
 
-    // Stats
-    stats: { flexDirection: 'row', gap: 8, marginBottom: 22 },
-    statChip: {
-      flex: 1,
+    // Week strip
+    week: {
+      flexDirection: 'row',
       backgroundColor: c.card,
-      borderRadius: 14,
-      paddingVertical: 12,
-      paddingHorizontal: 12,
+      borderRadius: 18,
       borderWidth: 1,
       borderColor: c.border,
+      paddingVertical: 12,
+      paddingHorizontal: 6,
+      marginBottom: 14,
     },
-    statChipAccent: {
-      // ~8% coral tint over the card. RRGGBBAA in hex; RN Web accepts it.
-      backgroundColor: c.tertiary + '14',
-      borderColor: c.tertiary + '55',
-    },
-    statLabel: {
+    weekCell: { flex: 1, alignItems: 'center', gap: 8 },
+    weekDow: {
       ...typography.badge,
       color: c.textMuted,
-      marginBottom: 4,
     },
-    statValue: {
+    weekNum: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    weekNumToday: { backgroundColor: c.accent },
+    weekNumText: {
       fontFamily: fonts.headlineSemiBold,
-      fontSize: 16,
-      lineHeight: 20,
+      fontSize: 14,
       color: c.text,
     },
-    statValueAccent: { color: c.tertiary },
+    weekNumTextToday: { color: c.accentText },
+
+    // Tip speech bubble
+    tip: {
+      backgroundColor: c.peach,
+      borderRadius: 16,
+      borderTopLeftRadius: 4,
+      padding: 14,
+      marginBottom: 22,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    tipBadge: {
+      backgroundColor: c.accent,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 999,
+    },
+    tipBadgeText: { ...typography.badge, color: c.accentText },
+    tipText: {
+      ...typography.bodyMedium,
+      color: '#5A4A2A',
+      flex: 1,
+      fontStyle: 'italic',
+    },
 
     // Section label
     sectionLabel: {
@@ -478,20 +509,20 @@ function makeStyles(c: Palette) {
     separator: { height: 10 },
     row: {
       backgroundColor: c.card,
-      borderRadius: 16,
-      padding: 14,
+      borderRadius: 18,
+      padding: 12,
       borderWidth: 1,
       borderColor: c.border,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
-    rowDone: {
-      backgroundColor: c.cardAlt,
-      borderColor: 'transparent',
-    },
-    rowMain: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    rowDone: { backgroundColor: c.cardAlt, borderColor: 'transparent' },
+    rowMain: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
     emojiWrap: {
-      width: 44,
-      height: 44,
-      borderRadius: 12,
+      width: 46,
+      height: 46,
+      borderRadius: 14,
       backgroundColor: c.cardAlt,
       alignItems: 'center',
       justifyContent: 'center',
@@ -500,38 +531,49 @@ function makeStyles(c: Palette) {
     rowText: { flex: 1 },
     emoji: { fontSize: 24 },
     name: { ...typography.headlineSm, color: c.text },
-    nameDone: { color: c.textMuted },
-    meta: { ...typography.meta, color: c.textMuted, marginTop: 2 },
+    nameDone: { color: c.textMuted, textDecorationLine: 'line-through' },
+    metaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
+    statusPill: {
+      ...typography.badge,
+      overflow: 'hidden',
+    },
+    statusTodo: { color: c.textMuted },
+    statusDone: { color: c.success },
+    meta: { ...typography.meta, color: c.textMuted },
     streakChip: {
       backgroundColor: c.cardAlt,
-      paddingHorizontal: 10,
+      paddingHorizontal: 9,
       paddingVertical: 4,
       borderRadius: 999,
     },
     streakText: { ...typography.badge, color: c.streak },
-    doneBtn: {
-      marginTop: 12,
-      backgroundColor: c.accent,
-      paddingVertical: 12,
-      borderRadius: 12,
-      alignItems: 'center',
-    },
-    doneBtnDone: {
-      backgroundColor: 'transparent',
-      borderWidth: 1,
-      borderColor: c.border,
-    },
-    doneBtnText: { ...typography.button, color: c.accentText },
-    doneBtnTextDone: { color: c.success },
 
-    // Empty state
+    // Quick-complete check toggle
+    check: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      borderWidth: 2,
+      borderColor: c.outline,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkDone: { backgroundColor: c.accent, borderColor: c.accent },
+    checkMark: {
+      color: c.accentText,
+      fontSize: 18,
+      fontFamily: fonts.bodyBold,
+      lineHeight: 20,
+    },
+
+    // Empty states
     empty: {
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: 24,
-      paddingVertical: 48,
+      paddingVertical: 36,
     },
-    emptyEmoji: { fontSize: 56, marginBottom: 16 },
+    emptyMascot: { width: 96, height: 96, marginBottom: 18 },
     emptyTitle: {
       ...typography.headlineMd,
       color: c.text,

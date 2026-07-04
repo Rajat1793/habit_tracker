@@ -25,7 +25,10 @@ function buildContent(
     body: 'Tap to log it.',
     data,
     // Suppress sound inside quiet hours; reminder still arrives silently.
-    sound: quiet ? false : 'default',
+    // `true` = system default sound. A string here is treated as a CUSTOM
+    // sound filename (must be bundled via the expo-notifications plugin),
+    // so never pass 'default'.
+    sound: quiet ? false : true,
     categoryIdentifier: HABIT_CATEGORY_ID,
     priority: quiet
       ? Notifications.AndroidNotificationPriority.LOW

@@ -50,8 +50,10 @@ export async function ensureAndroidChannel(): Promise<void> {
     name: 'Habit reminders',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#7C5CFF',
-    sound: 'default',
+    lightColor: '#E94B35',
+    // Omit `sound` so the channel uses the system default notification
+    // sound. Passing the string 'default' makes the native module look for
+    // a CUSTOM bundled sound file named 'default' and throw when missing.
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
     enableVibrate: true,
     showBadge: true,

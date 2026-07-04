@@ -64,88 +64,88 @@ export type Palette = {
 };
 
 export const light: Palette = {
-  // Surfaces — warm cream
-  bg: '#F7F6F2',
-  card: '#FFFFFF',
-  cardAlt: '#EFEDE5',
-  surface: '#F7F6F2',
+  // Surfaces — warm green-cream
+  bg: '#EFF1E6',
+  card: '#FBFBF3',
+  cardAlt: '#E4E7D5',
+  surface: '#EFF1E6',
 
   // Borders
-  border: '#E5E0D6', // outline-variant (subtle)
-  outline: '#B8B2A4', // outline (strong)
+  border: '#DFE2CE', // outline-variant (subtle)
+  outline: '#B9C0A3', // outline (strong)
 
   // Text
-  text: '#0F1115', // on-surface
-  textMuted: '#5A5F68', // on-surface-variant
-  textFaint: '#8A8F98',
+  text: '#16251A', // on-surface (dark green-ink)
+  textMuted: '#5D6B57', // on-surface-variant
+  textFaint: '#8B9682',
 
-  // CTA = ink-black on cream
-  accent: '#0F1115',
+  // CTA = deep forest green on cream
+  accent: '#2F6B36',
   accentText: '#FFFFFF',
-  primary: '#0F1115',
+  primary: '#2F6B36',
   onPrimary: '#FFFFFF',
 
   // Secondary
-  secondary: '#4A4F58',
+  secondary: '#4A5A46',
 
-  // Coral accent
-  tertiary: '#E94B35',
+  // Leaf-green accent (brand)
+  tertiary: '#4FA857',
   onTertiary: '#FFFFFF',
 
   // Status
-  success: '#1F7A4D',
-  warning: '#E94B35',
-  danger: '#DC2626',
-  error: '#DC2626',
+  success: '#3E8C46',
+  warning: '#E4A33B',
+  danger: '#D2513F',
+  error: '#D2513F',
 
   // Brand extras
-  peach: '#FFEBCC',
-  cream: '#FFF9D2',
+  peach: '#FDE9C7',
+  cream: '#F1F0E4',
 
-  streak: '#E94B35',
-  switchTrackOff: '#D9D4C7',
+  streak: '#E9843B',
+  switchTrackOff: '#D5D8C4',
 };
 
 export const dark: Palette = {
-  // Surfaces — near-black ink
-  bg: '#0A0B0E',
-  card: '#15171C',
-  cardAlt: '#1E2128',
-  surface: '#0A0B0E',
+  // Surfaces — dark green-ink
+  bg: '#0E140D',
+  card: '#1A2016',
+  cardAlt: '#232B1D',
+  surface: '#0E140D',
 
   // Borders
-  border: '#262A33',
-  outline: '#3A3F4A',
+  border: '#29331E',
+  outline: '#3C4A30',
 
   // Text
-  text: '#F2EFE7', // on-surface (cream)
-  textMuted: '#9CA3AF', // on-surface-variant
-  textFaint: '#6B7280',
+  text: '#EEF0E1', // on-surface (cream)
+  textMuted: '#A2AE95', // on-surface-variant
+  textFaint: '#6E7A63',
 
-  // CTA = cream on near-black
-  accent: '#F2EFE7',
-  accentText: '#0F1115',
-  primary: '#F2EFE7',
-  onPrimary: '#0F1115',
+  // CTA = bright green on near-black
+  accent: '#57B562',
+  accentText: '#0E140D',
+  primary: '#57B562',
+  onPrimary: '#0E140D',
 
   // Secondary
-  secondary: '#9CA3AF',
+  secondary: '#A2AE95',
 
-  // Coral accent (brighter in dark)
-  tertiary: '#FF6B52',
-  onTertiary: '#0F1115',
+  // Leaf-green accent (brighter in dark)
+  tertiary: '#62C06E',
+  onTertiary: '#0E140D',
 
   // Status
-  success: '#34D399',
-  warning: '#FF6B52',
-  danger: '#FF6B6B',
-  error: '#FF6B6B',
+  success: '#57B562',
+  warning: '#F0B454',
+  danger: '#F0715C',
+  error: '#F0715C',
 
   // Brand extras
-  peach: '#FFEBCC',
-  cream: '#FFF9D2',
+  peach: '#FDE9C7',
+  cream: '#EEF0E1',
 
-  streak: '#FF6B52',
-  switchTrackOff: '#262A33',
+  streak: '#F0954B',
+  switchTrackOff: '#29331E',
 };
 

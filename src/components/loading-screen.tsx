@@ -27,7 +27,7 @@ import { fonts, typography } from '@/theme/typography';
 import type { Palette } from '@/theme/colors';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const FLAME_ASSET = require('../../assets/adaptive-icon.png');
+const MASCOT_ASSET = require('../../assets/adaptive-icon.png');
 
 type LoadingScreenProps = {
   variant?: 'splash' | 'inline';
@@ -77,9 +77,9 @@ export function LoadingScreen({
 // the user's light/dark preference. Uses NO theme hooks so it can render
 // outside `<ThemeProvider>` (e.g. during root font load).
 
-const SPLASH_INK = '#0F1115';
-const SPLASH_CREAM = '#F2EFE7';
-const SPLASH_MUTED = '#7A7F88';
+const SPLASH_CREAM = '#F1F0E4';
+const SPLASH_INK = '#16251A';
+const SPLASH_MUTED = '#5D6B57';
 
 function SplashLoader({ caption }: { caption?: string }) {
   const { scale, opacity } = usePulse();
@@ -87,7 +87,7 @@ function SplashLoader({ caption }: { caption?: string }) {
     <View style={splashStyles.root}>
       <View style={splashStyles.center}>
         <Animated.Image
-          source={FLAME_ASSET}
+          source={MASCOT_ASSET}
           style={[splashStyles.flame, { transform: [{ scale }], opacity }]}
           resizeMode="contain"
           accessibilityIgnoresInvertColors
@@ -102,19 +102,19 @@ function SplashLoader({ caption }: { caption?: string }) {
 const splashStyles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: SPLASH_INK,
+    backgroundColor: SPLASH_CREAM,
     alignItems: 'center',
     justifyContent: 'center',
   },
   center: { alignItems: 'center' },
-  flame: { width: 128, height: 128 },
+  flame: { width: 132, height: 132 },
   wordmark: {
     // Font may not be loaded yet when splash renders — the system fallback
-    // is fine because the ink surface + flame already carry the brand.
+    // is fine because the cream surface + mascot already carry the brand.
     fontFamily: fonts.headlineBold,
     fontSize: 32,
-    color: SPLASH_CREAM,
-    marginTop: 20,
+    color: SPLASH_INK,
+    marginTop: 18,
     letterSpacing: -0.5,
   },
   caption: {
@@ -134,7 +134,7 @@ function InlineLoader({ caption }: { caption?: string }) {
   return (
     <View style={styles.root}>
       <Animated.Image
-        source={FLAME_ASSET}
+        source={MASCOT_ASSET}
         style={[styles.flame, { transform: [{ scale }], opacity }]}
         resizeMode="contain"
         accessibilityIgnoresInvertColors

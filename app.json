@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0F1115"
+      "backgroundColor": "#F1F0E4"
     },
     "ios": {
       "supportsTablet": true,
@@ -24,7 +24,7 @@
       "package": "com.streaks.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0F1115"
+        "backgroundColor": "#F1F0E4"
       },
       "permissions": ["NOTIFICATIONS", "POST_NOTIFICATIONS", "SCHEDULE_EXACT_ALARM"]
     },
@@ -37,7 +37,7 @@
       [
         "expo-notifications",
         {
-          "color": "#E94B35",
+          "color": "#3E8C46",
           "defaultChannel": "habit-reminders",
           "sounds": []
         }
