@@ -10,12 +10,21 @@ receives Expo push notifications, with shared deep-link handling.
 
 ## Demo
 
-| Screen | |
+<p align="center">
+  <img src="docs/screenshots/landing.png"  width="19%" alt="Landing / welcome hero" />
+  <img src="docs/screenshots/home.png"      width="19%" alt="Today list" />
+  <img src="docs/screenshots/new.png"       width="19%" alt="New habit form" />
+  <img src="docs/screenshots/detail.png"    width="19%" alt="Habit detail" />
+  <img src="docs/screenshots/settings.png"  width="19%" alt="Settings" />
+</p>
+
+| Screen | What it shows |
 |---|---|
-| Today list | _screenshot placeholder_ |
-| New habit form | _screenshot placeholder_ |
-| Habit detail (deep-link target) | _screenshot placeholder_ |
-| Settings (permissions + token) | _screenshot placeholder_ |
+| **Landing** ([onboarding.tsx](src/app/onboarding.tsx)) | Branded welcome hero with the mascot + **Get started** → opens the app |
+| **Today** ([index.tsx](src/app/index.tsx)) | Time-of-day greeting, week strip, contextual tip, progress, habit rows with a quick-complete toggle |
+| **New / edit habit** ([new.tsx](src/app/new.tsx)) | Name, daily/weekly frequency, 24h reminder time |
+| **Habit detail** ([habit/[id].tsx](src/app/habit/[id].tsx)) | Streak, schedule, last completed, notification IDs, done/edit/delete — the deep-link target |
+| **Settings** ([settings.tsx](src/app/settings.tsx)) | Appearance, language, notification permission, Expo push token, test reminder |
 
 **Demo video:** _add link before submission_
 
@@ -78,6 +87,39 @@ and install the resulting APK / TestFlight build on a **real device**
 
 ---
 
+## Over-the-air (OTA) updates
+
+JS + asset changes ship without a store review via **EAS Update**. The project
+is linked to EAS (`extra.eas.projectId` in [app.json](app.json)) with
+`runtimeVersion.policy = "appVersion"`, so an update only reaches builds whose
+native runtime matches.
+
+```bash
+eas update --branch preview    -m "your message"   # → preview builds
+eas update --branch production -m "your message"   # → production builds
+```
+
+Bump the native `version` in [app.json](app.json) whenever you change native
+code, so older binaries never pull incompatible JS. Dev clients don't consume
+updates — build a `preview`/`production` profile to test OTA end to end.
+
+---
+
+## Ship to Google Play
+
+`eas.json` has a `submit.production.android` profile (internal track, draft).
+
+```bash
+eas build  -p android --profile production      # signed .aab (EAS-managed keystore)
+eas submit -p android --profile production      # upload to the Play internal track
+```
+
+Prerequisites you provide once: a Google Play developer account, the app entry
+(`com.streaks.app`), the first manual `.aab` upload, and a service-account JSON
+saved as `google-service-account.json` in the repo root (gitignored).
+
+---
+
 ## Scripts
 
 | script | purpose |
@@ -107,7 +149,8 @@ and install the resulting APK / TestFlight build on a **real device**
 src/
   app/                         # expo-router screens
     _layout.tsx                # installs handler, channel, tap-router
-    index.tsx                  # today list, done, streak chips
+    onboarding.tsx             # welcome / landing hero → Get started
+    index.tsx                  # today list, week strip, done, streak chips
     new.tsx                    # create + edit form (?id=<x> = edit)
     habit/[id].tsx             # deep-link target
     settings.tsx               # permission, push token, test reminder
