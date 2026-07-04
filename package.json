@@ -30,6 +30,7 @@
     "expo-router": "~55.0.16",
     "expo-status-bar": "~55.0.6",
     "expo-system-ui": "~55.0.18",
+    "expo-updates": "~55.0.25",
     "i18n-js": "^4.4.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
