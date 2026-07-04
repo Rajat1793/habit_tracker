@@ -1,0 +1,34 @@
+Streaks — Release Notes
+=======================
+
+Play Console accepts release notes wrapped in a language tag. Paste the block
+below into the "Release notes" field when you create the release (edit the
+language tag if your default listing language differs).
+
+
+── Version 0.1.0 (versionCode 2) — Internal testing / first release ──────────
+
+<en-US>
+Welcome to Streaks! 🌱
+• Build daily and weekly habits with a friendly, colorful home screen.
+• On-time reminders that work offline (optional push notifications too).
+• Streak counts to keep your momentum going.
+• Quiet hours, light/dark themes, and English, Hindi & Spanish.
+• Your data stays on your device.
+</en-US>
+
+
+── Shorter alternative (if you prefer a tighter note) ────────────────────────
+
+<en-US>
+First release of Streaks — a simple, private habit tracker with offline
+reminders, streaks, quiet hours, and light/dark themes.
+</en-US>
+
+
+── For future updates shipped over-the-air (EAS Update) ──────────────────────
+
+OTA updates (JS/asset changes) don't need a new release note in Play, but keep
+a human-readable changelog here for each `eas update` you publish, e.g.:
+
+v0.1.0+1  Fixed reminder sound on Android; polished landing animation.

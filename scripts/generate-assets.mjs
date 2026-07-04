@@ -339,6 +339,78 @@ function renderSquiggle(w, h) {
   return PNG.sync.write(png);
 }
 
+/**
+ * Google Play feature graphic (1024×500). Cream field with the blob mascot on
+ * the right and a soft green corner accent — text-free so it renders crisply
+ * (add a headline in any editor if you want one).
+ */
+function renderFeatureGraphic(w, h) {
+  const png = new PNG({ width: w, height: h, filterType: -1 });
+  const buf = png.data;
+  const R = h * 0.44; // mascot half-size
+  const mcx = w * 0.72; // mascot center, right of frame
+  const mcy = h * 0.54;
+  const aa = 1.5 / R;
+  const fx = BLOB_A[0];
+  const fy = BLOB_A[1];
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = (y * w + x) * 4;
+      // Cream background with a faint diagonal green wash bottom-left.
+      let r = CREAM[0], g = CREAM[1], b = CREAM[2], a = 255;
+      const wash = clamp01((1 - x / w) * 0.9 + (y / h) * 0.5 - 0.5) * 0.1;
+      if (wash > 0) {
+        [r, g, b, a] = compose(
+          [r, g, b, a],
+          [MOSS[0], MOSS[1], MOSS[2], Math.round(wash * 255)],
+        );
+      }
+
+      const u = (x - mcx) / R;
+      const v = (mcy - y) / R;
+      const bodyIn =
+        BLOB_R - sdSegment(u, v, BLOB_A[0], BLOB_A[1], BLOB_B[0], BLOB_B[1]);
+      if (bodyIn > -aa) {
+        const bodyA = clamp01(0.5 + bodyIn / aa);
+        [r, g, b, a] = compose(
+          [r, g, b, a],
+          [MOSS[0], MOSS[1], MOSS[2], Math.round(bodyA * 255)],
+        );
+        if (v > -0.1) {
+          const sheen = clamp01((v + 0.1) / 0.7) * 0.14;
+          [r, g, b, a] = compose(
+            [r, g, b, a],
+            [MOSS_LIGHT[0], MOSS_LIGHT[1], MOSS_LIGHT[2], Math.round(sheen * 255 * bodyA)],
+          );
+        }
+        const eyeY = fy + 0.03;
+        const eL = (1 - Math.hypot((u - (fx - BEYE_X)) / BEYE_RX, (v - eyeY) / BEYE_RY)) * BEYE_RX;
+        const eR = (1 - Math.hypot((u - (fx + BEYE_X)) / BEYE_RX, (v - eyeY) / BEYE_RY)) * BEYE_RX;
+        const eyeIn = Math.max(eL, eR);
+        if (eyeIn > -aa) {
+          const eyeA = clamp01(0.5 + eyeIn / aa);
+          [r, g, b, a] = compose([r, g, b, a], [FACE[0], FACE[1], FACE[2], Math.round(eyeA * 255)]);
+        }
+        const scy = fy - 0.1;
+        if (scy - v > 0.02) {
+          const sd = BSMILE_STROKE - Math.abs(Math.hypot(u - fx, v - scy) - BSMILE_R);
+          if (sd > -aa) {
+            const sA = clamp01(0.5 + sd / aa);
+            [r, g, b, a] = compose([r, g, b, a], [FACE[0], FACE[1], FACE[2], Math.round(sA * 255)]);
+          }
+        }
+      }
+
+      buf[idx] = r;
+      buf[idx + 1] = g;
+      buf[idx + 2] = b;
+      buf[idx + 3] = a;
+    }
+  }
+  return PNG.sync.write(png);
+}
+
 // ─── asset variants ─────────────────────────────────────────────────────────
 
 function writePng(name, bytes) {
@@ -383,5 +455,14 @@ writePng(
 // Landing hero: blob character + wavy underline (transparent).
 writePng('mascot-blob.png', renderBlob(1024));
 writePng('squiggle.png', renderSquiggle(280, 64));
+
+// Google Play feature graphic (1024×500) → docs/store/.
+const STORE_DIR = join(REPO_ROOT, 'docs', 'store');
+mkdirSync(STORE_DIR, { recursive: true });
+const featureBytes = renderFeatureGraphic(1024, 500);
+writeFileSync(join(STORE_DIR, 'feature-graphic.png'), featureBytes);
+console.log(
+  `  ✓ docs/store/feature-graphic.png  (${featureBytes.length.toLocaleString()} B)`,
+);
 
 console.log('Done.');
