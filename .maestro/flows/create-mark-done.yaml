@@ -2,7 +2,7 @@
 #
 # Run with:
 #   maestro test .maestro/flows/create-mark-done.yaml
-appId: com.streaks.app
+appId: com.rajat.streaks.app
 ---
 - launchApp:
     clearState: true

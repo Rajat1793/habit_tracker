@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.streaks.app",
+      "bundleIdentifier": "com.rajat.streaks.app",
       "infoPlist": {
         "UIBackgroundModes": [
           "remote-notification",
@@ -24,7 +24,7 @@
       }
     },
     "android": {
-      "package": "com.streaks.app",
+      "package": "com.rajat.streaks.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F1F0E4"

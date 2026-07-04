@@ -1,7 +1,7 @@
 # Google Play — Streaks submission cheat‑sheet
 
 Everything you need to fill the Play Console forms. Copy/paste the blocks
-directly. Package: **`com.streaks.app`** · Version **0.1.0 (versionCode 2)**.
+directly. Package: **`com.rajat.streaks.app`** · Version **0.1.0 (versionCode 2)**.
 
 Privacy policy URL (after you enable GitHub Pages — see bottom):
 `https://rajat1793.github.io/habit_tracker/privacy-policy.html`

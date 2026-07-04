@@ -115,7 +115,7 @@ eas submit -p android --profile production      # upload to the Play internal tr
 ```
 
 Prerequisites you provide once: a Google Play developer account, the app entry
-(`com.streaks.app`), the first manual `.aab` upload, and a service-account JSON
+(`com.rajat.streaks.app`), the first manual `.aab` upload, and a service-account JSON
 saved as `google-service-account.json` in the repo root (gitignored).
 
 ---
