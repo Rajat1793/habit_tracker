@@ -465,4 +465,11 @@ console.log(
   `  ✓ docs/store/feature-graphic.png  (${featureBytes.length.toLocaleString()} B)`,
 );
 
+// Google Play high-res store icon (512×512, opaque) → docs/store/.
+const playIconBytes = renderMascot(512, CREAM, { scale: 0.74, center: [0.5, 0.52] });
+writeFileSync(join(STORE_DIR, 'play-icon-512.png'), playIconBytes);
+console.log(
+  `  ✓ docs/store/play-icon-512.png  (${playIconBytes.length.toLocaleString()} B)`,
+);
+
 console.log('Done.');

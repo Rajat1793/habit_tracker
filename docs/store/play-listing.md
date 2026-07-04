@@ -1,7 +1,7 @@
 # Google Play — Streaks submission cheat‑sheet
 
 Everything you need to fill the Play Console forms. Copy/paste the blocks
-directly. Package: **`com.rajat.streaks.app`** · Version **0.1.0 (versionCode 2)**.
+directly. Package: **`com.rajat.streaks.app`** · Version **0.1.0 (versionCode 3)**.
 
 Privacy policy URL (after you enable GitHub Pages — see bottom):
 `https://rajat1793.github.io/habit_tracker/privacy-policy.html`
@@ -65,7 +65,7 @@ Phone:   (optional)
 
 | Asset | Requirement | Status |
 |---|---|---|
-| App icon | 512×512 PNG (32-bit) | Use `assets/icon.png` scaled to 512, or Play uses the AAB icon |
+| App icon | 512×512 PNG (32-bit) | `docs/store/play-icon-512.png` (generated) |
 | Feature graphic | 1024×500 PNG/JPG (required for production) | `docs/store/feature-graphic.png` (generated) |
 | Phone screenshots | 2–8, PNG/JPG, 16:9 or 9:16, 320–3840px | Use `docs/screenshots/*.png` (1080×2424 ✓) |
 | Tablet screenshots | optional | — |
@@ -77,7 +77,7 @@ Recommended screenshot order: `landing.png`, `home.png`, `new.png`,
 
 ## 3. Release (Testing → Internal testing → Create release)
 
-- **App bundle:** upload `~/Desktop/streaks-production.aab` (versionCode 2).
+- **App bundle:** upload the latest EAS AAB (versionCode 3).
 - **Signing:** choose **Use Play App Signing** (recommended).
 - **Release name:** `2 (0.1.0)` (auto).
 - **Release notes:** paste from [release-notes.txt](release-notes.txt).
