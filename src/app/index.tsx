@@ -26,8 +26,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { useHabits } from '@/hooks/use-habits';
+import { useClockFormat } from '@/hooks/use-clock-format';
 import { isDueToday } from '@/lib/habits/frequency';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
+import { formatTime } from '@/lib/time';
 import { useThemedStyles } from '@/theme/theme-context';
 import { fonts, typography } from '@/theme/typography';
 import { useI18n, useT } from '@/i18n';
@@ -37,10 +39,6 @@ import type { Palette } from '@/theme/colors';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const MASCOT_ASSET = require('../../assets/adaptive-icon.png');
-
-function fmtTime(h: number, m: number) {
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
 
 /** Pick a greeting bucket for the current hour. */
 function greetingKey(hour: number): 'morning' | 'afternoon' | 'evening' | 'night' {
@@ -71,10 +69,11 @@ function isSameDay(a: Date, b: Date) {
 }
 
 export default function HomeScreen() {
-  const { habits, status, markDoneToday } = useHabits();
+  const { habits, status, markDoneToday, undoDoneToday } = useHabits();
   const router = useRouter();
   const t = useT();
   const { locale } = useI18n();
+  const { format: clockFormat } = useClockFormat();
   const styles = useThemedStyles(makeStyles);
 
   const todays = useMemo(() => habits.filter((h) => isDueToday(h)), [habits]);
@@ -290,7 +289,11 @@ export default function HomeScreen() {
               renderItem={({ item }) => {
                 const done = isDoneToday(item);
                 const streak = getDisplayStreak(item);
-                const time = fmtTime(item.frequency.hour, item.frequency.minute);
+                const time = formatTime(
+                  item.frequency.hour,
+                  item.frequency.minute,
+                  clockFormat,
+                );
                 const freq =
                   item.frequency.kind === 'daily'
                     ? t('home.daily')
@@ -342,14 +345,17 @@ export default function HomeScreen() {
 
                     <Pressable
                       style={[styles.check, done && styles.checkDone]}
-                      onPress={() => markDoneToday(item.id)}
-                      disabled={done}
+                      onPress={() =>
+                        done ? undoDoneToday(item.id) : markDoneToday(item.id)
+                      }
                       accessibilityRole="button"
-                      accessibilityState={{ disabled: done, checked: done }}
+                      accessibilityState={{ checked: done }}
                       accessibilityLabel={
                         done ? t('home.done') : t('home.markDone')
                       }
-                      accessibilityHint={done ? undefined : t('a11y.hintMarkDone')}
+                      accessibilityHint={
+                        done ? t('a11y.hintUndoDone') : t('a11y.hintMarkDone')
+                      }
                     >
                       {done && <Text style={styles.checkMark}>✓</Text>}
                     </Pressable>

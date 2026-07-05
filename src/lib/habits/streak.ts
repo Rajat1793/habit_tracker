@@ -47,6 +47,32 @@ export function markDone(habit: Habit, today: Date = new Date()): Habit {
 }
 
 /**
+ * Revert today's completion — for an accidental tap.
+ *
+ * With no full completion history we reconstruct the prior state:
+ *   - streak ≥ 2 → yesterday was part of the run, so step back to yesterday
+ *     with `streak − 1`.
+ *   - streak ≤ 1 → today was a fresh/reset completion, so there is no known
+ *     earlier date; clear it (streak 0, never-completed).
+ * No-op if the habit isn't currently marked done today.
+ */
+export function undoDone(habit: Habit, today: Date = new Date()): Habit {
+  const todayISO = toLocalDateISO(today);
+  if (habit.lastCompletedISO !== todayISO) return habit;
+
+  if (habit.streak >= 2) {
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    return {
+      ...habit,
+      streak: habit.streak - 1,
+      lastCompletedISO: toLocalDateISO(yesterday),
+    };
+  }
+  return { ...habit, streak: 0, lastCompletedISO: null };
+}
+
+/**
  * What the UI should show right now.
  *
  * If the last completion is older than yesterday, the visible streak is 0 —

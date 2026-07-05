@@ -27,6 +27,8 @@ import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { usePushNotifications } from '@/hooks/use-push-notifications';
 import { useHabits } from '@/hooks/use-habits';
+import { useClockFormat } from '@/hooks/use-clock-format';
+import type { ClockFormat } from '@/lib/time';
 import { parseBackup, serializeBackup } from '@/lib/habits/backup';
 import { copyTokenToClipboard } from '@/lib/notifications/push';
 import {
@@ -66,12 +68,18 @@ const LOCALE_OPTIONS: { value: LocalePref; label: string }[] = [
   ...SUPPORTED_LOCALES.map((code) => ({ value: code, label: code.toUpperCase() })),
 ];
 
+const TIME_FORMATS: { value: ClockFormat; labelKey: string }[] = [
+  { value: '12h', labelKey: 'settings.timeFormat12' },
+  { value: '24h', labelKey: 'settings.timeFormat24' },
+];
+
 export default function SettingsScreen() {
   const { token, permission, loading, register, refreshPermission, openSettings } =
     usePushNotifications();
   const { habits, replaceAll } = useHabits();
   const colors = useColors();
   const { mode, setMode } = useTheme();
+  const { format: clockFormat, setFormat: setClockFormat } = useClockFormat();
   const { pref: localePref, setPref: setLocalePref, t } = useI18n();
   const styles = useThemedStyles(makeStyles);
   const router = useRouter();
@@ -163,7 +171,7 @@ export default function SettingsScreen() {
             ? `Tap to open “${target.name}”.`
             : 'Tap to verify deep linking.',
           data,
-          sound: 'default',
+          sound: true,
         },
         trigger: {
           type: SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -207,6 +215,30 @@ export default function SettingsScreen() {
           ))}
         </View>
         <Text style={styles.fineprint}>{t('settings.appearanceHint')}</Text>
+      </View>
+
+      {/* Time format */}
+      <View style={styles.card}>
+        <Text style={styles.cardLabel}>{t('settings.timeFormat')}</Text>
+        <View style={styles.segment}>
+          {TIME_FORMATS.map(({ value, labelKey }) => (
+            <Pressable
+              key={value}
+              onPress={() => setClockFormat(value)}
+              style={[styles.segmentBtn, clockFormat === value && styles.segmentBtnActive]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: clockFormat === value }}
+              accessibilityLabel={t(labelKey)}
+            >
+              <Text
+                style={[styles.segmentText, clockFormat === value && styles.segmentTextActive]}
+              >
+                {t(labelKey)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.fineprint}>{t('settings.timeFormatHint')}</Text>
       </View>
 
       {/* Language */}

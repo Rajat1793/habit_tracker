@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { makeId } from '@/lib/habits/id';
 import * as storage from '@/lib/habits/storage';
-import { markDone as applyMarkDone } from '@/lib/habits/streak';
+import { markDone as applyMarkDone, undoDone as applyUndoDone } from '@/lib/habits/streak';
 import type { Frequency, Habit } from '@/lib/habits/types';
 import { syncBadgeCount } from '@/lib/notifications/badge';
 import {
@@ -91,6 +91,7 @@ export type UseHabitsApi = {
   updateHabit: (id: string, patch: Partial<HabitDraft>) => Promise<Habit | null>;
   deleteHabit: (id: string) => Promise<void>;
   markDoneToday: (id: string) => Promise<Habit | null>;
+  undoDoneToday: (id: string) => Promise<Habit | null>;
   replaceAll: (next: Habit[]) => Promise<void>;
 };
 
@@ -162,6 +163,16 @@ export function useHabits(): UseHabitsApi {
     return next;
   }, []);
 
+  /** Revert today's completion (e.g. an accidental tap). No-op if not done today. */
+  const undoDoneToday = useCallback(async (id: string) => {
+    const existing = cache.find((h) => h.id === id);
+    if (!existing) return null;
+    const next = applyUndoDone(existing);
+    if (next === existing) return existing; // wasn't done today
+    await commit(cache.map((h) => (h.id === id ? next : h)));
+    return next;
+  }, []);
+
   /**
    * Wipe and replace the whole store — used by backup restore.
    * Cancels every existing habit's notifications first, then reschedules
@@ -185,6 +196,7 @@ export function useHabits(): UseHabitsApi {
     updateHabit,
     deleteHabit,
     markDoneToday,
+    undoDoneToday,
     replaceAll,
   };
 }

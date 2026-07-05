@@ -3,6 +3,7 @@ import {
   isDoneToday,
   markDone,
   toLocalDateISO,
+  undoDone,
 } from '../streak';
 import type { Habit } from '../types';
 
@@ -96,5 +97,37 @@ describe('getDisplayStreak', () => {
   it('returns 0 when last completion is older than yesterday', () => {
     const h = makeHabit({ streak: 7, lastCompletedISO: '2026-06-08' });
     expect(getDisplayStreak(h, d('2026-06-10'))).toBe(0);
+  });
+});
+
+describe('undoDone', () => {
+  it('no-ops when the habit is not done today (same reference)', () => {
+    const h = makeHabit({ streak: 3, lastCompletedISO: '2026-06-09' });
+    const next = undoDone(h, d('2026-06-10'));
+    expect(next).toBe(h);
+  });
+
+  it('steps back to yesterday and decrements when streak >= 2', () => {
+    const h = makeHabit({ streak: 5, lastCompletedISO: '2026-06-10' });
+    const next = undoDone(h, d('2026-06-10'));
+    expect(next.streak).toBe(4);
+    expect(next.lastCompletedISO).toBe('2026-06-09');
+    expect(isDoneToday(next, d('2026-06-10'))).toBe(false);
+  });
+
+  it('clears completion when today was a fresh streak of 1', () => {
+    const h = makeHabit({ streak: 1, lastCompletedISO: '2026-06-10' });
+    const next = undoDone(h, d('2026-06-10'));
+    expect(next.streak).toBe(0);
+    expect(next.lastCompletedISO).toBeNull();
+  });
+
+  it('round-trips with markDone (mark then undo restores prior state)', () => {
+    const before = makeHabit({ streak: 4, lastCompletedISO: '2026-06-09' });
+    const done = markDone(before, d('2026-06-10'));
+    expect(done.streak).toBe(5);
+    const undone = undoDone(done, d('2026-06-10'));
+    expect(undone.streak).toBe(4);
+    expect(undone.lastCompletedISO).toBe('2026-06-09');
   });
 });

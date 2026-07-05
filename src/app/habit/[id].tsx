@@ -11,7 +11,9 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits } from '@/hooks/use-habits';
+import { useClockFormat } from '@/hooks/use-clock-format';
 import { getDisplayStreak, isDoneToday } from '@/lib/habits/streak';
+import { formatTime } from '@/lib/time';
 import { isWeekly, type Weekday } from '@/lib/habits/types';
 import { confirmDestructive } from '@/lib/ui/alerts';
 import { useThemedStyles } from '@/theme/theme-context';
@@ -29,15 +31,12 @@ const WEEKDAY_NAMES: Record<Weekday, string> = {
   7: 'Sat',
 };
 
-function fmtTime(h: number, m: number) {
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-}
-
 export default function HabitDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const habit = useHabit(id);
-  const { markDoneToday, deleteHabit, status } = useHabits();
+  const { markDoneToday, undoDoneToday, deleteHabit, status } = useHabits();
+  const { format: clockFormat } = useClockFormat();
   const styles = useThemedStyles(makeStyles);
   const t = useT();
 
@@ -69,7 +68,7 @@ export default function HabitDetailScreen() {
 
   const done = isDoneToday(habit);
   const streak = getDisplayStreak(habit);
-  const time = fmtTime(habit.frequency.hour, habit.frequency.minute);
+  const time = formatTime(habit.frequency.hour, habit.frequency.minute, clockFormat);
 
   const onDelete = () => {
     confirmDestructive({
@@ -134,12 +133,11 @@ export default function HabitDetailScreen() {
 
       <Pressable
         style={[styles.primaryBtn, done && styles.primaryBtnDone]}
-        onPress={() => markDoneToday(habit.id)}
-        disabled={done}
+        onPress={() => (done ? undoDoneToday(habit.id) : markDoneToday(habit.id))}
         accessibilityRole="button"
-        accessibilityState={{ disabled: done }}
+        accessibilityState={{ checked: done }}
         accessibilityLabel={done ? t('detail.doneToday') : t('detail.markToday')}
-        accessibilityHint={done ? undefined : t('a11y.hintMarkDone')}
+        accessibilityHint={done ? t('a11y.hintUndoDone') : t('a11y.hintMarkDone')}
       >
         <Text style={[styles.primaryBtnText, done && styles.primaryBtnTextDone]}>
           {done ? t('detail.doneToday') : t('detail.markToday')}

@@ -18,6 +18,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useHabit, useHabits, type HabitDraft } from '@/hooks/use-habits';
+import { useClockFormat } from '@/hooks/use-clock-format';
+import { to12h, to24h } from '@/lib/time';
 import type { Frequency, Weekday } from '@/lib/habits/types';
 import { notify } from '@/lib/ui/alerts';
 import { useColors, useThemedStyles } from '@/theme/theme-context';
@@ -46,14 +48,22 @@ export default function NewHabitScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const editing = useHabit(params.id);
   const { createHabit, updateHabit } = useHabits();
+  const { format: clockFormat } = useClockFormat();
+  const is12h = clockFormat === '12h';
   const colors = useColors();
   const t = useT();
   const styles = useThemedStyles(makeStyles);
 
+  const initialHour24 = editing?.frequency.hour ?? 9;
+  const initial12 = to12h(initialHour24);
+
   const [name, setName] = useState(editing?.name ?? '');
   const [kind, setKind] = useState<Frequency['kind']>(editing?.frequency.kind ?? 'daily');
-  const [hour, setHour] = useState(String(editing?.frequency.hour ?? 9));
+  const [hour, setHour] = useState(
+    String(is12h ? initial12.hour12 : initialHour24),
+  );
   const [minute, setMinute] = useState(String(editing?.frequency.minute ?? 0));
+  const [period, setPeriod] = useState<'AM' | 'PM'>(initial12.period);
   const [weekdays, setWeekdays] = useState<Weekday[]>(
     editing && editing.frequency.kind === 'weekly' ? editing.frequency.weekdays : [2, 4, 6],
   );
@@ -62,11 +72,13 @@ export default function NewHabitScreen() {
   const title = editing ? t('form.titleEdit') : t('form.titleNew');
 
   const frequency: Frequency = useMemo(() => {
-    const h = clampInt(hour, 0, 23);
     const m = clampInt(minute, 0, 59);
+    const h = is12h
+      ? to24h(clampInt(hour, 1, 12), period)
+      : clampInt(hour, 0, 23);
     if (kind === 'daily') return { kind: 'daily', hour: h, minute: m };
     return { kind: 'weekly', weekdays, hour: h, minute: m };
-  }, [kind, hour, minute, weekdays]);
+  }, [kind, hour, minute, weekdays, is12h, period]);
 
   // Emoji field was removed; the display code in list/detail already falls
   // back to '✨' when the stored value is empty. Preserve the existing
@@ -168,7 +180,7 @@ export default function NewHabitScreen() {
             onChangeText={setHour}
             keyboardType="number-pad"
             maxLength={2}
-            placeholder="HH"
+            placeholder={is12h ? 'h' : 'HH'}
             placeholderTextColor={colors.textFaint}
             style={[styles.input, styles.timeInput]}
             accessibilityLabel="Reminder hour"
@@ -184,6 +196,29 @@ export default function NewHabitScreen() {
             style={[styles.input, styles.timeInput]}
             accessibilityLabel="Reminder minute"
           />
+          {is12h && (
+            <View style={styles.periodGroup}>
+              {(['AM', 'PM'] as const).map((p) => (
+                <Pressable
+                  key={p}
+                  onPress={() => setPeriod(p)}
+                  style={[styles.periodBtn, period === p && styles.periodBtnActive]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: period === p }}
+                  accessibilityLabel={p}
+                >
+                  <Text
+                    style={[
+                      styles.periodText,
+                      period === p && styles.periodTextActive,
+                    ]}
+                  >
+                    {p}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
         </View>
 
         <Pressable
@@ -247,6 +282,21 @@ function makeStyles(c: Palette) {
     timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     timeInput: { flex: 1, textAlign: 'center', fontSize: 20, fontVariant: ['tabular-nums'] },
     timeColon: { color: c.text, fontSize: 22, fontWeight: '700' },
+    periodGroup: {
+      flexDirection: 'row',
+      backgroundColor: c.card,
+      borderRadius: 12,
+      padding: 4,
+      marginLeft: 4,
+    },
+    periodBtn: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 9,
+    },
+    periodBtnActive: { backgroundColor: c.accent },
+    periodText: { color: c.textMuted, fontWeight: '700' },
+    periodTextActive: { color: c.accentText },
     saveBtn: {
       marginTop: 28,
       backgroundColor: c.accent,
